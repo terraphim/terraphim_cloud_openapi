@@ -4,6 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[workspace]
+members = [
+    "crates/terraphim-automata",
+]
 
 [dependencies]
 redis = { version = "0.23.0", features = ["tokio-rustls-comp"] }
@@ -30,7 +34,7 @@ base64 = "0.21.0"
 serde_urlencoded = "0.7.1"
 directories = ">= 2, < 5"
 dotenv = "0.15"
-config =  {git = "https://github.com/mehcode/config-rs.git" }
+config = "0.13.3"
 
 # rustls, update together
 hyper-rustls = { version = "0.24.0", default-features = false }

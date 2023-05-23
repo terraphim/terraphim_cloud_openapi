@@ -22,16 +22,16 @@ pub struct Settings {
 impl Settings {
     pub fn new() -> Result<Self, ConfigError> {
 
-    let mut settings = Config::default();
+    let mut settings = Config::builder();
 
     // Start off by merging in the "default" configuration file
-    settings.merge(File::with_name("config/default"))?;
+    // settings.merge(File::with_name("config/default"))?;
     let env = env::var("RUN_MODE").unwrap_or_else(|_| "development".into());
     println!("env: {}", env);
     if let Some(proj_dirs) = ProjectDirs::from("com", "aks",  "terraphim") {
         let config_dir=proj_dirs.config_dir();
         println!("Project Dir {:?}", config_dir);
-        settings.set("config_dir", config_dir.to_str()).unwrap();
+        settings = settings.set_default("config_dir", config_dir.to_str())?;
         println!("Create folder if doesn't exist");
         std::fs::create_dir_all(proj_dirs.config_dir()).unwrap();
         let filename= proj_dirs.config_dir().join("config.toml");
@@ -41,21 +41,26 @@ impl Settings {
             println!("{:?}", filename);
         } else {
             println!("File does not exist");
-            std::fs::copy("config/default.toml", filename).unwrap();
+            std::fs::copy("config/default.toml", &filename).unwrap();
         }
-        settings.merge(File::with_name(filename.to_str().unwrap()))?;  
+        
+        settings=settings.add_source(File::with_name(filename.to_str().unwrap()));  
         
 
     }
 
     // settings.merge(File::with_name(".env"))?;
-    settings.merge(Environment::with_prefix("TERRAPHIM")).unwrap();
-    println!("Settings: {:?}", settings);
+    settings=settings.add_source(Environment::with_prefix("TERRAPHIM"));
+    match settings.build() {
+        Ok(config) => {
+            println!("Settings: {:?}", config);
+            Ok(config.try_deserialize())?
+        },
+        Err(e) => {
+            println!("Error: {:?}", e);
+            Err(e)
+        }
+    }
 
-    settings.try_deserialize()
-    // return Ok(Settings {
-    //     opts: Opts::parse(),
-    //     config_dir: todo!(),
-    // })
     }
 }

@@ -21,9 +21,19 @@ use redis::{FromRedisValue, Value};
 use redis_derive::{FromRedisValue, ToRedisArgs};
 use ulid::Ulid;
 
+#[derive(Debug, Deserialize, Serialize)]
+struct Edge {
+    source: String,
+    target: String,
+    rank: f64,
+    year: Option<i64>,
+}
+
+
+
 #[derive(Tags)]
 enum ApiTags {
-    /// Operations about user
+    /// Operations about articles
     Article,
     SearchQuery
 }
@@ -196,49 +206,50 @@ impl Api {
         .query(&mut con).unwrap();
         CreateArticleResponse::Ok(Json(id))
     }
-    #[oai(path = "/gsearch/", method = "post", tag = "ApiTags::SearchQuery")]
-    async fn find_article(&self, settings: Data<&Settings>,search_query: Json<SearchQuery>) -> Json<Vec<RedisearchResult>> {
-        let role = search.role.as_deref().unwrap_or("");
-        println!("Role {}", role);
-    let automata_url = if role == "Medical" {
-        "https://s3.eu-west-2.amazonaws.com/assets.thepattern.digital/automata_fresh_semantic.pkl.lzma"
-    } else {
-        "https://terraphim-automata.s3.eu-west-2.amazonaws.com/automata_cyberattack.lzma"
-    };
-    let automata = load_matcher(automata_url).unwrap();
-    let nodes = match_nodes(&search.search, &automata);
-    println!("Nodes {:?}", nodes);
-    let links = get_edges(&nodes, Some(50), None, None).unwrap();
-    println!("Links {:?}", links);
-    let mut result_table = Vec::new();
-    let mut article_set = std::collections::HashSet::new();
-    let client = Client::open("redis://127.0.0.1/").unwrap();
-    let conn = client.get_connection().unwrap();
-    for each_record in links.iter().take(50) {
-        let edge_query = format!("{}:{}", each_record.source, each_record.target);
-        println!("Edge query {}", edge_query);
-        let edge_scored: Vec<String> = conn.zrangebyscore_withscores(
-            format!("edges_scored:{}", edge_query),
-            "-inf",
-            "+inf",
-            (0, 5),
-        ).unwrap().into_iter().map(|(k, _)| k).collect();
-        println!("Edge scored {:?}", edge_scored);
-        for sentence_key in edge_scored {
-            let mut parts = sentence_key.split(':');
-            let article_id = parts.nth(1).unwrap();
-            if article_set.insert(article_id.to_owned()) {
-                let title: String = conn.hget(format!("article_id:{}", article_id), "title").unwrap();
-                let hash_tag = parts.last().unwrap();
-                result_table.push(SearchResult {
-                    title,
-                    pk: hash_tag.to_owned(),
-                    url: "".to_owned(),
-                });
-            }
-        }
-    }
-    }
+    // #[oai(path = "/gsearch/", method = "post", tag = "ApiTags::SearchQuery")]
+    // async fn graph_search(&self, settings: Data<&Settings>,search_query: Json<SearchQuery>) -> Json<Vec<RedisearchResult>> {
+    //     let role = search.role.as_deref().unwrap_or("");
+    //     println!("Role {}", role);
+    // let automata_url = if role == "Medical" {
+    //     "https://s3.eu-west-2.amazonaws.com/assets.thepattern.digital/automata_fresh_semantic.pkl.lzma"
+    // } else {
+    //     "https://terraphim-automata.s3.eu-west-2.amazonaws.com/automata_cyberattack.lzma"
+    // };
+    // let automata = load_matcher(automata_url).unwrap();
+    // let nodes = match_nodes(&search.search, &automata);
+    // println!("Nodes {:?}", nodes);
+    // let links = get_edges(&nodes, Some(50), None, None).unwrap();
+    // println!("Links {:?}", links);
+    // let mut result_table = Vec::new();
+    // let mut article_set = std::collections::HashSet::new();
+    // let url = settings.redis_url.clone();
+    // let client = redis::Client::open(url).unwrap();
+    // let mut con = client.get_connection().unwrap();
+    // for each_record in links.iter().take(50) {
+    //     let edge_query = format!("{}:{}", each_record.source, each_record.target);
+    //     println!("Edge query {}", edge_query);
+    //     let edge_scored: Vec<String> = con.zrangebyscore_withscores(
+    //         format!("edges_scored:{}", edge_query),
+    //         "-inf",
+    //         "+inf",
+    //         (0, 5),
+    //     ).unwrap().into_iter().map(|(k, _)| k).collect();
+    //     println!("Edge scored {:?}", edge_scored);
+    //     for sentence_key in edge_scored {
+    //         let mut parts = sentence_key.split(':');
+    //         let article_id = parts.nth(1).unwrap();
+    //         if article_set.insert(article_id.to_owned()) {
+    //             let title: String = con.hget(format!("article_id:{}", article_id), "title").unwrap();
+    //             let hash_tag = parts.last().unwrap();
+    //             result_table.push(SearchResult {
+    //                 title,
+    //                 pk: hash_tag.to_owned(),
+    //                 url: "".to_owned(),
+    //             });
+    //         }
+    //     }
+    // }
+    // }
 
     /// Find article by search term
     #[oai(path = "/search/", method = "post", tag = "ApiTags::SearchQuery")]
