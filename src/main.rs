@@ -21,14 +21,10 @@ use redis::{FromRedisValue, Value};
 use redis_derive::{FromRedisValue, ToRedisArgs};
 use ulid::Ulid;
 
-#[derive(Debug, Deserialize, Serialize)]
-struct Edge {
-    source: String,
-    target: String,
-    rank: f64,
-    year: Option<i64>,
-}
+use terraphim_automata::{Dictionary, Matched, load_automata, find_matches};
 
+mod graph_search;
+use graph_search::{match_nodes, mock_get_edges, get_edges, Edge};
 
 
 #[derive(Tags)]
@@ -206,18 +202,25 @@ impl Api {
         .query(&mut con).unwrap();
         CreateArticleResponse::Ok(Json(id))
     }
-    // #[oai(path = "/gsearch/", method = "post", tag = "ApiTags::SearchQuery")]
-    // async fn graph_search(&self, settings: Data<&Settings>,search_query: Json<SearchQuery>) -> Json<Vec<RedisearchResult>> {
-    //     let role = search.role.as_deref().unwrap_or("");
-    //     println!("Role {}", role);
-    // let automata_url = if role == "Medical" {
-    //     "https://s3.eu-west-2.amazonaws.com/assets.thepattern.digital/automata_fresh_semantic.pkl.lzma"
-    // } else {
-    //     "https://terraphim-automata.s3.eu-west-2.amazonaws.com/automata_cyberattack.lzma"
-    // };
-    // let automata = load_matcher(automata_url).unwrap();
-    // let nodes = match_nodes(&search.search, &automata);
-    // println!("Nodes {:?}", nodes);
+
+    #[oai(path = "/gsearch/", method = "post", tag = "ApiTags::SearchQuery")]
+    async fn graph_search(&self, settings: Data<&Settings>,search_query: Json<SearchQuery>) -> Json<Vec<String>> {
+        println!("{:#?}",search_query);
+         let role = search_query.role.as_deref().unwrap_or("");
+         println!("Role {}", role);
+         let automata_url = "./crates/terraphim_automata/data/output.csv.gz";
+         let automata = load_automata(automata_url).unwrap();
+         let nodes = match_nodes(&search_query.search_term, automata);
+         println!("Nodes {:?}", nodes);
+         let links = mock_get_edges();
+        //  let links = get_edges(settings, &nodes, ["2020"], 50, None).unwrap();
+         println!("Links {:?}", links);
+
+         Json(nodes)
+    }
+  
+
+    // 
     // let links = get_edges(&nodes, Some(50), None, None).unwrap();
     // println!("Links {:?}", links);
     // let mut result_table = Vec::new();

@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [workspace]
 members = [
-    "crates/terraphim-automata",
+    "crates/terraphim_automata",
 ]
 
 [dependencies]
@@ -35,7 +35,7 @@ serde_urlencoded = "0.7.1"
 directories = ">= 2, < 5"
 dotenv = "0.15"
 config = "0.13.3"
-
+terraphim_automata = {version="0.1.0", path="crates/terraphim_automata"}
 # rustls, update together
 hyper-rustls = { version = "0.24.0", default-features = false }
 rustls = "0.21.0"
