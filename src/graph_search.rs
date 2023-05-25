@@ -11,9 +11,9 @@ use crate::settings::{Settings, self};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Edge {
-    source: String,
-    target: String,
-    rank: f64,
+    source_id: String,
+    target_id: String,
+    rank: u64,
     year: Option<i64>,
 }
 
@@ -32,15 +32,15 @@ pub fn match_nodes(search_string: &str, automata: HashMap<String, Dictionary>) -
 pub fn mock_get_edges() -> Vec<Edge> {
     let edges = vec![
         Edge {
-            source: "node1".to_string(),
-            target: "node2".to_string(),
-            rank: 0.5,
+            source_id: "node1".to_string(),
+            target_id: "node2".to_string(),
+            rank: 5,
             year: Some(2021),
         },
         Edge {
-            source: "node2".to_string(),
-            target: "node3".to_string(),
-            rank: 0.8,
+            source_id: "node2".to_string(),
+            target_id: "node3".to_string(),
+            rank: 1,
             year: Some(2022),
         },
     ];

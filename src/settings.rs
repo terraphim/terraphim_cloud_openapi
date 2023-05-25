@@ -5,12 +5,9 @@ use config::{ConfigError, Config, File, Environment};
 use directories::ProjectDirs;
 use serde_derive::Deserialize;
 
-
-
-
 /// Configuration for the server.
 /// These values are set when the server initializes, and do not change while running.
-/// These are constructed from [Opts], which in turn are constructed from CLI arguments and ENV variables.
+/// These are constructed from default or local files and ENV variables. 
 #[derive(Clone, Debug, Deserialize)]
 pub struct Settings {
     /// The address to listen on

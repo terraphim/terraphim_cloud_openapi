@@ -38,7 +38,6 @@ enum ApiTags {
 #[derive(Debug, Object, FromRedisValue, ToRedisArgs)]
 struct Article {
     id:Option<String>,
-    #[oai(validator(max_length = 254))]
     stub: Option<String>,
     title: String,
     url: String,
