@@ -1563,9 +1563,9 @@ dependencies = [
 
 [[package]]
 name = "redis"
-version = "0.23.0"
+version = "0.22.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3ea8c51b5dc1d8e5fd3350ec8167f464ec0995e79f2e90a075b63371500d557f"
+checksum = "aa8455fa3621f6b41c514946de66ea0531f57ca017b2e6c7cc368035ea5b46df"
 dependencies = [
  "async-trait",
  "bytes",
@@ -1574,12 +1574,9 @@ dependencies = [
  "itoa",
  "percent-encoding",
  "pin-project-lite",
- "rustls",
- "rustls-native-certs",
  "ryu",
  "sha1_smol",
  "tokio",
- "tokio-rustls",
  "tokio-util",
  "url",
 ]
@@ -1593,6 +1590,15 @@ dependencies = [
  "quote",
  "redis 0.21.7",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "redis-graph"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "102f4672d594158faf6bffa0705f76736c6c17de5733644a00222532fe485ba4"
+dependencies = [
+ "redis 0.22.3",
 ]
 
 [[package]]
@@ -1771,27 +1777,6 @@ dependencies = [
  "ring",
  "rustls-webpki",
  "sct",
-]
-
-[[package]]
-name = "rustls-native-certs"
-version = "0.6.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0167bac7a9f490495f3c33013e7722b53cb087ecbe082fb0c6387c96f634ea50"
-dependencies = [
- "openssl-probe",
- "rustls-pemfile",
- "schannel",
- "security-framework",
-]
-
-[[package]]
-name = "rustls-pemfile"
-version = "1.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d194b56d58803a43635bdc398cd17e383d6f71f9182b9a192c127ca42494a59b"
-dependencies = [
- "base64 0.21.0",
 ]
 
 [[package]]
@@ -2095,8 +2080,9 @@ dependencies = [
  "poem",
  "poem-openapi",
  "quick-xml",
- "redis 0.23.0",
+ "redis 0.21.7",
  "redis-derive",
+ "redis-graph",
  "regex",
  "rustls",
  "serde",

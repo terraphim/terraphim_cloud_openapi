@@ -13,6 +13,7 @@ pub struct Settings {
     /// The address to listen on
     pub server_url: String,
     pub redis_url: String,
+    pub redis_cluster_url: String,
     pub config_dir: PathBuf,
     pub api_endpoint: String,
 }

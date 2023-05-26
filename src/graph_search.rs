@@ -3,17 +3,25 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::collections::HashSet;
 
+
 use redis::{FromRedisValue, Value};
 
 use redis_derive::{FromRedisValue, ToRedisArgs};
 
+use redis::Commands;
+
+mod graph_types;
+use graph_types::{GraphResultSet, GraphResult};
+
+
 use crate::settings::{Settings, self};
 
-#[derive(Debug, Deserialize, Serialize)]
+
+#[derive(Debug, Deserialize, Serialize, FromRedisValue)]
 pub struct Edge {
-    source_id: String,
-    target_id: String,
-    rank: u64,
+    e_id: String,
+    t_id: String,
+    rank: f64,
     year: Option<i64>,
 }
 
@@ -29,104 +37,63 @@ pub fn match_nodes(search_string: &str, automata: HashMap<String, Dictionary>) -
     println!("Matched nodes {:#?}", nodes);
     nodes
 }
-pub fn mock_get_edges() -> Vec<Edge> {
-    let edges = vec![
-        Edge {
-            source_id: "node1".to_string(),
-            target_id: "node2".to_string(),
-            rank: 5,
-            year: Some(2021),
-        },
-        Edge {
-            source_id: "node2".to_string(),
-            target_id: "node3".to_string(),
-            rank: 1,
-            year: Some(2022),
-        },
-    ];
-    edges
-}
 
 pub fn get_edges(
     settings: &Settings,
     nodes: &[String],
     years: Option<&[&str]>,
     limits: i64,
-    mnodes: &std::collections::HashSet<String>,
 ) -> Vec<Edge> {
     let mut links = Vec::new();
     // let mut nodes_set = std::collections::HashSet::new();
     let mut years_set:Vec<String> = Vec::new();
     let url = settings.redis_url.clone();
     let client = redis::Client::open(url).unwrap();
-    let mut conn = client.get_connection().unwrap();
+    let mut con = client.get_connection().unwrap();
     let graph_name = "cord19medical";
-    let query = if let Some(years) = years {
-        let years: Vec<String> = years.iter().map(|year| year.to_string()).collect();
-        format!(
-            "WITH $ids as ids
-            MATCH (e:entity)-[r]->(t:entity)
-            WHERE e.id IN ids AND r.year IN $years
-            RETURN DISTINCT e.id, t.id, max(r.rank), r.year
-            ORDER BY r.rank DESC LIMIT {}",
-            limits
-        )
-    } else {
-        format!(
-            "WITH $ids as ids
-            MATCH (e:entity)-[r]->(t:entity)
-            WHERE e.id IN ids
-            RETURN DISTINCT e.id, t.id, max(r.rank), r.year
-            ORDER BY r.rank DESC LIMIT {}",
-            limits
-        )
-    };
-    let params = if let Some(years) = years {
-        redis::cmd("GRAPH.QUERY")
+    let ids = format!("[{}]", nodes.join(",")).replace("\"", "\'");
+    
+    // let query = if let Some(years) = years {
+    //     let years: Vec<String> = years.iter().map(String::from).collect();
+    //     format!(
+    //         "WITH {ids} as ids
+    //         MATCH (e:entity)-[r]->(t:entity)
+    //         WHERE e.id IN ids AND r.year IN {years}
+    //         RETURN DISTINCT e.id, t.id, max(r.rank), r.year
+    //         ORDER BY r.rank DESC LIMIT {limits}",
+    //         ids = nodes, years=years, limits = limits
+    //     )
+    // } else {
+        // query withot years
+        // };
+        let query =format!("WITH {ids} as ids MATCH (e:entity)-[r]->(t:entity) WHERE e.id IN ids RETURN DISTINCT e.id, t.id, max(r.rank), r.year ORDER BY r.rank DESC LIMIT {limits}", ids = ids, limits = limits);
+        println!("Query: {}", query);
+        
+        let result_set=redis::cmd("GRAPH.QUERY")
             .arg(graph_name)
             .arg(query)
-            .arg("ids")
-            .arg(nodes)
-            .arg("years")
-            .arg(years)
-            .arg("limits")
-            .arg(limits)
-            .query::<redis::Value>(&mut conn)
-            .unwrap()
-    } else {
-        redis::cmd("GRAPH.QUERY")
-            .arg(graph_name)
-            .arg(query)
-            .arg("ids")
-            .arg(nodes)
-            .arg("limits")
-            .arg(limits)
-            .query::<redis::Value>(&mut conn)
-            .unwrap()
-    };
-    let result_set = params;
+            .query::<redis::Value>(&mut con)
+            .unwrap();
     println!("Result set: {:?}", result_set);
-    // for record in result_set {
-    //     let source = record[0].as_str().unwrap().to_owned();
-    //     let target = record[1].as_str().unwrap().to_owned();
+    let result_set: GraphResultSet = GraphResultSet::from_redis_value(&result_set).unwrap();
+    println!("Result set: {:?}", result_set);
+    // let result_vec: Vec<redis::Value> = redis::from_redis_value(&result_set).unwrap();
+    // // let edges= RedisearchResult::from_redis_value(&result_set);
+    // println!("Result set: {:?}", result_vec.len());
+    // println!("Result set 0: {:?}", result_vec[0]);
+    // println!("Result set 1: {:?}", result_vec[1]);
+    // println!("Result set 2: {:?}", result_vec[2]);
+
+    // let my_struct: MyStruct= redis::from_redis_value(&result_vec[0]).unwrap();
+    // println!("Struct: {:?}", my_struct);
+    // // for record in result_set {
+    //     let source_id = record[0].as_str().unwrap().to_owned();
+    //     let target_id = record[1].as_str().unwrap().to_owned();
     //     let rank = record[2].as_float().unwrap();
     //     let year = record[3].as_i64();
-    //     if !mnodes.contains(&source) {
-    //         nodes_set.insert(source.clone());
-    //     } else {
-    //         println!("Node {} excluded", source);
-    //     }
-    //     if !mnodes.contains(&target) {
-    //         nodes_set.insert(target.clone());
-    //     } else {
-    //         println!("Node {} excluded", target);
-    //     }
-    //     if let Some(year) = year {
-    //         years_set.insert(year);
-    //     }
     //     links.push(Edge {
-    //         source,
-    //         target,
+    //         source_id,
+    //         target_id,
     //         rank,
     //         year,
     //     });

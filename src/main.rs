@@ -24,7 +24,7 @@ use ulid::Ulid;
 use terraphim_automata::{Dictionary, Matched, load_automata, find_matches};
 
 mod graph_search;
-use graph_search::{match_nodes, mock_get_edges, get_edges, Edge};
+use graph_search::{match_nodes, get_edges, Edge};
 
 
 #[derive(Tags)]
@@ -184,7 +184,6 @@ impl Api {
         let url = settings.redis_url.clone();
         let client = redis::Client::open(url).unwrap();
         let mut con = client.get_connection().unwrap();
-        let _: () = redis::cmd("PING").query(&mut con).unwrap();
         println!("Aricle {:?}",article);
         // let _: () = con.hset_multiple(
         //     format!("article:{}",id),
@@ -199,6 +198,18 @@ impl Api {
         .arg(format!("article:{}",id))
         .arg(&*article)
         .query(&mut con).unwrap();
+        let cluster_client = redis::Client::open(settings.redis_cluster_url.clone()).unwrap();
+        let mut ccon = cluster_client.get_connection().unwrap();
+        let body = article.body.split('\n').collect::<Vec<&str>>().join(" ");
+        let _: ()= redis::cmd("SET")
+            .arg(format!("paragraphs:{}",&id))
+            .arg(body)
+            .execute(&mut ccon);
+
+        let _: ()= redis::cmd("SADD")
+            .arg("processed_docs_stage1")
+            .arg(&id)
+            .execute(&mut ccon);
         CreateArticleResponse::Ok(Json(id))
     }
 
@@ -211,8 +222,7 @@ impl Api {
          let automata = load_automata(automata_url).unwrap();
          let nodes = match_nodes(&search_query.search_term, automata);
          println!("Nodes {:?}", nodes);
-         let links = mock_get_edges();
-        //  let links = get_edges(settings, &nodes, ["2020"], 50, None).unwrap();
+        let links= get_edges(&settings, &nodes, None, 50);
          println!("Links {:?}", links);
 
          Json(nodes)
