@@ -17,7 +17,6 @@ mod settings;
 use settings::Settings;
 
 use redis::{FromRedisValue, Value};
-
 use redis_derive::{FromRedisValue, ToRedisArgs};
 use ulid::Ulid;
 
@@ -57,7 +56,7 @@ struct SearchQuery{
 
 //  FT.CREATE ArticleIdx ON HASH PREFIX 1 article: SCHEMA title TEXT WEIGHT 5.0 body TEXT url TEXT
 
-
+// TODO: check if can be rewritten nice with https://docs.rs/struct-field-names-as-array/latest/struct_field_names_as_array/ or macros
 #[derive(Object,Serialize, Deserialize, Debug)]
 pub struct RedisearchResult {
         id:String,
@@ -179,37 +178,28 @@ impl Api {
     async fn create_article(&self, settings: Data<&Settings>, article: Json<Article>) -> CreateArticleResponse {
         
         let id  = Ulid::new().to_string();
-        println!("{:?}",article);
 
         let url = settings.redis_url.clone();
         let client = redis::Client::open(url).unwrap();
         let mut con = client.get_connection().unwrap();
-        println!("Aricle {:?}",article);
-        // let _: () = con.hset_multiple(
-        //     format!("article:{}",id),
-        //     &[  ("id", &id),
-        //         ("title", &article.title),
-        //         ("url", &article.url),
-        //         ("body", &article.body)
-        //     ],
-        // )
-        // .unwrap();
+        // println!("Aricle {:?}",article);
         let _: () = redis::cmd("HSET")
         .arg(format!("article:{}",id))
         .arg(&*article)
         .query(&mut con).unwrap();
-        let cluster_client = redis::Client::open(settings.redis_cluster_url.clone()).unwrap();
-        let mut ccon = cluster_client.get_connection().unwrap();
+        // let nodes = vec![settings.redis_cluster_url.clone(),"redis://127.0.0.1:30002/".to_string()];
+        // let cluster_client = ClusterClient::new(nodes).unwrap();
+        // let mut cluster_connection = cluster_client.get_async_connection().await.unwrap();
         let body = article.body.split('\n').collect::<Vec<&str>>().join(" ");
-        let _: ()= redis::cmd("SET")
-            .arg(format!("paragraphs:{}",&id))
-            .arg(body)
-            .execute(&mut ccon);
-
+        // let _: () = con.set(format!("paragraphs:{}",&id),body).await.unwrap();
+        let _: () = redis::cmd("SET")
+        .arg(format!("paragraphs:{}",&id))
+        .arg(body)
+        .query(&mut con).unwrap();
         let _: ()= redis::cmd("SADD")
             .arg("processed_docs_stage1")
             .arg(&id)
-            .execute(&mut ccon);
+            .execute(&mut con);
         CreateArticleResponse::Ok(Json(id))
     }
 

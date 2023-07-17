@@ -11,4 +11,11 @@ curl -X 'POST' \
   "role": "project manager"
 }'
 ```
-This is a rewrite of [Python-based API](https://github.com/applied-knowledge-systems/the-pattern-api/) in Rust
+This is a rewrite of [Python-based API](https://github.com/applied-knowledge-systems/the-pattern-api/) in Rust 
+
+#TODO:
+[] make articles JSON? 
+[] copy config from Python
+[] turn pre-processing articles sentences to edge into crate
+[] add redis sessions
+[] add mark nodes API 
