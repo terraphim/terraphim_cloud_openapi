@@ -46,6 +46,7 @@ ulid = {version = "1.0.0",features=["serde","uuid"]}
 serde_derive = "1.0.163"
 lazy_static = "1.4.0"
 redis-graph = { version = "0.4.3", features = ['tokio-comp'] }
+itertools = "0.11.0"
 
 [dependencies.clap]
 features = ["derive", "env", "cargo"]
