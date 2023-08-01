@@ -8,8 +8,6 @@ edition = "2021"
 members = [
     "crates/terraphim_automata",
     "crates/terraphim_pipeline",
-    "crates/terraphim-markdown-parser",
-    "crates/terraphim_automata/node/terraphim-automata-node-rs",
 ]
 
 [dependencies]
@@ -39,6 +37,7 @@ directories = ">= 2, < 5"
 dotenv = "0.15"
 config = "0.13.3"
 terraphim_automata = {version="0.1.0", path="crates/terraphim_automata"}
+terraphim_pipeline = {version="0.1.0", path="crates/terraphim_pipeline"}
 # rustls, update together
 hyper-rustls = { version = "0.24.0", default-features = false }
 rustls = "0.21.0"

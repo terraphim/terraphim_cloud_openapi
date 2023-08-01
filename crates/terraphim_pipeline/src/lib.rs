@@ -1,15 +1,15 @@
-use unicode_segmentation::UnicodeSegmentation;
 use regex::Regex;
+use unicode_segmentation::UnicodeSegmentation;
 
 #[macro_use]
 extern crate lazy_static;
 lazy_static! {
     static ref RE: Regex = Regex::new(r"[?!|]\s+").unwrap();
 }
-pub fn split_paragraphs(paragraphs: &str) -> Vec<String> {
+pub fn split_paragraphs(paragraphs: &str) -> Vec<&str> {
     let sentences = UnicodeSegmentation::split_sentence_bounds(paragraphs);
     let parts = sentences.flat_map(|sentence| RE.split(sentence.trim()));
-    parts.map(|part| part.trim().to_string()).collect()
+    parts.map(|part| part.trim()).collect()
 }
 
 #[cfg(test)]

@@ -1,12 +1,6 @@
-use poem::{
-    listener::TcpListener, web::Data, EndpointExt,
-    Result, Route, Server,
-};
+use poem::{listener::TcpListener, web::Data, EndpointExt, Result, Route, Server};
 use poem_openapi::{param::Query, payload::PlainText, OpenApi, OpenApiService};
-use poem_openapi::{
-    payload::Json,
-    ApiResponse, Object, Tags,
-};
+use poem_openapi::{payload::Json, ApiResponse, Object, Tags};
 
 use serde::{Deserialize, Serialize};
 
@@ -20,52 +14,50 @@ use redis::{FromRedisValue, Value};
 use redis_derive::{FromRedisValue, ToRedisArgs};
 use ulid::Ulid;
 
-use terraphim_automata::{Dictionary, Matched, load_automata, find_matches};
-
+use terraphim_automata::{find_matches, load_automata, Dictionary, Matched};
+use terraphim_pipeline::split_paragraphs;
 mod graph_search;
-use graph_search::{match_nodes, get_edges, Edge};
-
+use graph_search::{get_edges, match_nodes, Edge};
 
 #[derive(Tags)]
 enum ApiTags {
     /// Operations about articles
     Article,
-    SearchQuery
+    SearchQuery,
 }
 
 /// Create article schema
 #[derive(Debug, Object, FromRedisValue, ToRedisArgs)]
 struct Article {
-    id:Option<String>,
+    id: Option<String>,
     stub: Option<String>,
     title: String,
     url: String,
     body: String,
     description: Option<String>,
-    tags: Option<Vec<String>>
-
+    tags: Option<Vec<String>>,
 }
 
 #[derive(Debug, Object)]
-struct SearchQuery{
-    search_term:String,
-    skip:usize,
-    limit:usize,
+struct SearchQuery {
+    search_term: String,
+    skip: usize,
+    limit: usize,
     role: Option<String>,
 }
 
 //  FT.CREATE ArticleIdx ON HASH PREFIX 1 article: SCHEMA title TEXT WEIGHT 5.0 body TEXT url TEXT
 
 // TODO: check if can be rewritten nice with https://docs.rs/struct-field-names-as-array/latest/struct_field_names_as_array/ or macros
-#[derive(Object,Serialize, Deserialize, Debug)]
+#[derive(Object, Serialize, Deserialize, Debug)]
 pub struct RedisearchResult {
-        id:String,
-        stub: Option<String>,
-        title: String,
-        url: String,
-        body: String,
-        description: Option<String>,
-        tags: Option<Vec<String>>
+    id: String,
+    stub: Option<String>,
+    title: String,
+    url: String,
+    body: String,
+    description: Option<String>,
+    tags: Option<Vec<String>>,
 }
 
 impl FromRedisValue for RedisearchResult {
@@ -78,16 +70,22 @@ impl FromRedisValue for RedisearchResult {
         let mut body = String::new();
         let mut description = String::new();
         let mut tags = vec![<String>::new()];
-        println!(" Values - - - {:?}",values);
+        println!(" Values - - - {:?}", values);
         for i in 0..values.len() {
             match values[i].as_str() {
-                "id" => id= values[i + 1].clone(),
+                "id" => id = values[i + 1].clone(),
                 "title" => title = values[i + 1].clone(),
                 "stub" => stub = values[i + 1].clone(),
-                "url" => url= values[i + 1].clone(),
+                "url" => url = values[i + 1].clone(),
                 "body" => body = values[i + 1].clone(),
                 "description" => description = values[i + 1].clone(),
-                "tags" => tags = values[i + 1].clone().split(',').map(|s| s.trim().to_string()).collect(),
+                "tags" => {
+                    tags = values[i + 1]
+                        .clone()
+                        .split(',')
+                        .map(|s| s.trim().to_string())
+                        .collect()
+                }
                 _ => continue,
             }
         }
@@ -125,7 +123,6 @@ pub fn parse_redisearch_response(response: &Value) -> Vec<RedisearchResult> {
         _ => vec![],
     }
 }
-
 
 #[derive(ApiResponse)]
 enum CreateArticleResponse {
@@ -175,28 +172,44 @@ impl Api {
         }
     }
     #[oai(path = "/articles", method = "post", tag = "ApiTags::Article")]
-    async fn create_article(&self, settings: Data<&Settings>, article: Json<Article>) -> CreateArticleResponse {
-        
-        let id  = Ulid::new().to_string();
+    async fn create_article(
+        &self,
+        settings: Data<&Settings>,
+        article: Json<Article>,
+    ) -> CreateArticleResponse {
+        let id = Ulid::new().to_string();
 
         let url = settings.redis_url.clone();
         let client = redis::Client::open(url).unwrap();
         let mut con = client.get_connection().unwrap();
         // println!("Aricle {:?}",article);
         let _: () = redis::cmd("HSET")
-        .arg(format!("article:{}",id))
-        .arg(&*article)
-        .query(&mut con).unwrap();
+            .arg(format!("article:{}", id))
+            .arg(&*article)
+            .query(&mut con)
+            .unwrap();
         // let nodes = vec![settings.redis_cluster_url.clone(),"redis://127.0.0.1:30002/".to_string()];
         // let cluster_client = ClusterClient::new(nodes).unwrap();
         // let mut cluster_connection = cluster_client.get_async_connection().await.unwrap();
-        let body = article.body.split('\n').collect::<Vec<&str>>().join(" ");
+        // let body = article.body.split('\n').collect::<Vec<&str>>().join(" ");
         // let _: () = con.set(format!("paragraphs:{}",&id),body).await.unwrap();
-        let _: () = redis::cmd("SET")
-        .arg(format!("paragraphs:{}",&id))
-        .arg(body)
-        .query(&mut con).unwrap();
-        let _: ()= redis::cmd("SADD")
+        // split paragraph by stentences
+        for sentence in split_paragraphs(&article.body) {
+            println!("{}", sentence);
+            // for each role run
+            // println!("Role {}", role);
+            let automata_url = "./crates/terraphim_automata/data/output.csv.gz";
+            let automata = load_automata(automata_url).unwrap();
+            let nodes = match_nodes(sentence, automata);
+            println!("Nodes {:?}", nodes);
+        }
+
+        // let _: () = redis::cmd("SET")
+        //     .arg(format!("paragraphs:{}", &id))
+        //     .arg(body)
+        //     .query(&mut con)
+        //     .unwrap();
+        let _: () = redis::cmd("SADD")
             .arg("processed_docs_stage1")
             .arg(&id)
             .execute(&mut con);
@@ -204,22 +217,25 @@ impl Api {
     }
 
     #[oai(path = "/gsearch/", method = "post", tag = "ApiTags::SearchQuery")]
-    async fn graph_search(&self, settings: Data<&Settings>,search_query: Json<SearchQuery>) -> Json<Vec<String>> {
-        println!("{:#?}",search_query);
-         let role = search_query.role.as_deref().unwrap_or("");
-         println!("Role {}", role);
-         let automata_url = "./crates/terraphim_automata/data/output.csv.gz";
-         let automata = load_automata(automata_url).unwrap();
-         let nodes = match_nodes(&search_query.search_term, automata);
-         println!("Nodes {:?}", nodes);
-        let links= get_edges(&settings, &nodes, None, 50);
-         println!("Links {:?}", links);
+    async fn graph_search(
+        &self,
+        settings: Data<&Settings>,
+        search_query: Json<SearchQuery>,
+    ) -> Json<Vec<String>> {
+        println!("{:#?}", search_query);
+        let role = search_query.role.as_deref().unwrap_or("");
+        println!("Role {}", role);
+        let automata_url = "./crates/terraphim_automata/data/output.csv.gz";
+        let automata = load_automata(automata_url).unwrap();
+        let nodes = match_nodes(&search_query.search_term, automata);
+        println!("Nodes {:?}", nodes);
+        let links = get_edges(&settings, &nodes, None, 50);
+        println!("Links {:?}", links);
 
-         Json(nodes)
+        Json(nodes)
     }
-  
 
-    // 
+    //
     // let links = get_edges(&nodes, Some(50), None, None).unwrap();
     // println!("Links {:?}", links);
     // let mut result_table = Vec::new();
@@ -255,46 +271,50 @@ impl Api {
 
     /// Find article by search term
     #[oai(path = "/search/", method = "post", tag = "ApiTags::SearchQuery")]
-    async fn find_article(&self, settings: Data<&Settings>,search_query: Json<SearchQuery>) -> Json<Vec<RedisearchResult>> {
+    async fn find_article(
+        &self,
+        settings: Data<&Settings>,
+        search_query: Json<SearchQuery>,
+    ) -> Json<Vec<RedisearchResult>> {
         let url = settings.redis_url.clone();
         let client = redis::Client::open(url).unwrap();
         let mut con = client.get_connection().unwrap();
-        println!("{:#?}",search_query);
+        println!("{:#?}", search_query);
 
-        let values: Vec<Value>= redis::cmd("FT.SEARCH").arg("ArticleIdx")
-        .arg(&search_query.search_term).arg("LIMIT")
-        .arg(search_query.skip)
-        .arg(search_query.limit).query(&mut con).unwrap();
+        let values: Vec<Value> = redis::cmd("FT.SEARCH")
+            .arg("ArticleIdx")
+            .arg(&search_query.search_term)
+            .arg("LIMIT")
+            .arg(search_query.skip)
+            .arg(search_query.limit)
+            .query(&mut con)
+            .unwrap();
         println!("Output of scan");
-        println!("{:#?}",values);
+        println!("{:#?}", values);
         let array_value = redis::Value::Bulk(values);
         let results = parse_redisearch_response(&array_value);
         Json(results)
     }
-    
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();
     let settings = Settings::new().unwrap();
-    println!("{:?}",settings);
+    println!("{:?}", settings);
     let bind_addr = settings.server_url.clone();
     let api_endpoint = settings.api_endpoint.clone();
-    let api_service =
-        OpenApiService::new(Api, "Hello World", "1.0").server(api_endpoint);
+    let api_service = OpenApiService::new(Api, "Hello World", "1.0").server(api_endpoint);
     let ui = api_service.swagger_ui();
     let spec = api_service.spec();
     let route = Route::new()
-    .nest("/api", api_service)
-    .nest("/ui", ui)
-    .at("/spec", poem::endpoint::make_sync(move |_| spec.clone()))
-    // .with(Cors::new())
-    .data(settings);
-    
-    Server::new(TcpListener::bind(bind_addr))
-    .run(route)
-    .await?;
+        .nest("/api", api_service)
+        .nest("/ui", ui)
+        .at("/spec", poem::endpoint::make_sync(move |_| spec.clone()))
+        // .with(Cors::new())
+        .data(settings);
+
+    Server::new(TcpListener::bind(bind_addr)).run(route).await?;
 
     Ok(())
 }
