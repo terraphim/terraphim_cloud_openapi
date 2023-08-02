@@ -1,8 +1,8 @@
 use poem::{listener::TcpListener, web::Data, EndpointExt, Result, Route, Server};
 use poem_openapi::{param::Query, payload::PlainText, OpenApi, OpenApiService};
 use poem_openapi::{payload::Json, ApiResponse, Object, Tags};
-use std::error::Error;
 use serde::{Deserialize, Serialize};
+use std::error::Error;
 
 extern crate config;
 extern crate serde;
@@ -27,7 +27,7 @@ enum ApiTags {
 }
 
 /// Create article schema
-#[derive(Deserialize, Serialize,Debug, Object, FromRedisValue, ToRedisArgs)]
+#[derive(Deserialize, Serialize, Debug, Object, FromRedisValue, ToRedisArgs)]
 struct Article {
     id: Option<String>,
     stub: Option<String>,
@@ -160,19 +160,19 @@ enum UpdateArticleResponse {
     NotFound,
 }
 
-fn parse_article(article: &Article, role: &str, automata_url:&str) -> Vec<Matched>{
-        let mut nodes = Vec::new();
-        for sentence in split_paragraphs(&article.body) {
-            println!("{}", sentence);
-            // for each role run
-            // println!("Role {}", role);
-            // let automata_url = "./crates/terraphim_automata/data/output.csv.gz";
-            let automata = load_automata(automata_url).unwrap();
-            let matched_ents = find_matches(sentence, automata, false).expect("Failed to find matches");
-            println!("Nodes {:?}", matched_ents);
-            nodes.extend(matched_ents);
-        }
-        nodes
+fn parse_article(article: &Article, role: &str, automata_url: &str) -> Vec<Matched> {
+    let mut nodes = Vec::new();
+    for sentence in split_paragraphs(&article.body) {
+        println!("{}", sentence);
+        // for each role run
+        // println!("Role {}", role);
+        // let automata_url = "./crates/terraphim_automata/data/output.csv.gz";
+        let automata = load_automata(automata_url).unwrap();
+        let matched_ents = find_matches(sentence, automata, false).expect("Failed to find matches");
+        println!("Nodes {:?}", matched_ents);
+        nodes.extend(matched_ents);
+    }
+    nodes
 }
 
 struct Api;
@@ -209,7 +209,6 @@ impl Api {
         // let body = article.body.split('\n').collect::<Vec<&str>>().join(" ");
         // let _: () = con.set(format!("paragraphs:{}",&id),body).await.unwrap();
         // split paragraph by stentences
-
 
         // let _: () = redis::cmd("SET")
         //     .arg(format!("paragraphs:{}", &id))
@@ -332,20 +331,20 @@ mod tests {
 
     #[test]
     fn test_parse_article() {
-        use std::fs;
-        use serde_json;
         use itertools::Itertools;
+        use serde_json;
+        use std::fs;
         let input = fs::read_to_string("test-data/article.json").unwrap();
         let article: Article = serde_json::from_str(&input).unwrap();
         let role = "project-manager";
-        let automata_url="./test-data/term_to_id.csv.gz";
+        let automata_url = "./test-data/term_to_id.json";
         let expected_output = vec![Matched {
             term: "project manager".to_string(),
             id: "project-manager".to_string(),
-            parent: None,
+            nterm: "project management".to_string(),
             pos: Some((0, 14)),
         }];
-        let nodes=parse_article(&article,role, automata_url);
+        let nodes = parse_article(&article, role, automata_url);
         for pair in nodes.into_iter().combinations(2) {
             println!("Pair {:?}", pair);
         }

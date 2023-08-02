@@ -1,0 +1,622 @@
+{
+  "source documents": {
+    "id": "01H6VGEFEA81E20MQP515MSAVS",
+    "nterm": "source documents"
+  },
+  "swot": {
+    "id": "01H6VGEFEAVH6ZN4G5TGZZ21RB",
+    "nterm": "strategy documents"
+  },
+  "project scheduling": {
+    "id": "01H6VGEFE84JW9045V7F5WFXGY",
+    "nterm": "project planning"
+  },
+  "project direction": {
+    "id": "01H6VGEFE74KH2VNMV25X1PCVS",
+    "nterm": "project direction"
+  },
+  "life cycle stages": {
+    "id": "01H6VGEFE57F74HEK2X20PQB6J",
+    "nterm": "life cycle models"
+  },
+  "project planner iso15288": {
+    "id": "01H6VGEFE8DTWPWRGFC5AFM8F8",
+    "nterm": "project planner iso15288"
+  },
+  "semp": {
+    "id": "01H6VGEFEADB8YVWC3104ZDD6Y",
+    "nterm": "semp"
+  },
+  "documentation hierarchy": {
+    "id": "01H6VGEFE48Z93HS870NDRC1BG",
+    "nterm": "documentation tree"
+  },
+  "goals and objectives": {
+    "id": "01H6VGEFEAVH6ZN4G5TGZZ21RB",
+    "nterm": "strategy documents"
+  },
+  "documentation tree": {
+    "id": "01H6VGEFE48Z93HS870NDRC1BG",
+    "nterm": "documentation tree"
+  },
+  "invoice or bill": {
+    "id": "01H6VGEFEA81E20MQP515MSAVS",
+    "nterm": "source documents"
+  },
+  "credit card sales voucher": {
+    "id": "01H6VGEFEA81E20MQP515MSAVS",
+    "nterm": "source documents"
+  },
+  "portfolio of projects": {
+    "id": "01H6VGEFE9PTYK0Y4MDG7TBMMA",
+    "nterm": "project portfolio"
+  },
+  "experienced personnel": {
+    "id": "01H6VGEFE9XVWZQT5SJYWFH49A",
+    "nterm": "qualified personnel"
+  },
+  "infrastructure management plan": {
+    "id": "01H6VGEFE7ZCVPBV0HH61T7T9B",
+    "nterm": "project infrastructure needs"
+  },
+  "staff resources needs": {
+    "id": "01H6VGEFE7EGY3MQ28NXXQBJ91",
+    "nterm": "project human resources needs"
+  },
+  "cheque": {
+    "id": "01H6VGEFEA81E20MQP515MSAVS",
+    "nterm": "source documents"
+  },
+  "project chart": {
+    "id": "01H6VGEFE9DVE86GT712S15HER",
+    "nterm": "project schedule"
+  },
+  "life cycle framework": {
+    "id": "01H6VGEFE57F74HEK2X20PQB6J",
+    "nterm": "life cycle models"
+  },
+  "rfp": {
+    "id": "01H6VGEFE4MX8FFPFZVTCKCX2P",
+    "nterm": "acquisition need"
+  },
+  "define the project": {
+    "id": "01H6VGEFE4G6XXKHETBKBZBHK8",
+    "nterm": "define the project"
+  },
+  "@102 - prof. michael levin, prof. irina rish - emergence, intelligence, transhumanism.___": {
+    "id": "01H6VGEFDYA6F4BFVZ7Z2CJH44",
+    "nterm": "@102 - prof. michael levin, prof. irina rish - emergence, intelligence, transhumanism.___"
+  },
+  "quality control plan": {
+    "id": "01H6VGEFEA4EGM4X8EN1NFYEEA",
+    "nterm": "quality assurance plan"
+  },
+  "preventive action": {
+    "id": "01H6VGEFE9BYHWHNMNPR0F3YWP",
+    "nterm": "qm corrective actions"
+  },
+  "restriction": {
+    "id": "01H6VGEFE7D1TGTVXFA1X04ATT",
+    "nterm": "project constraints"
+  },
+  "work breakdown structure": {
+    "id": "01H6VGEFEAFZAR066A0Q4RJWND",
+    "nterm": "work breakdown structure"
+  },
+  "specify the project": {
+    "id": "01H6VGEFE4G6XXKHETBKBZBHK8",
+    "nterm": "define the project"
+  },
+  "project evaluation": {
+    "id": "01H6VGEFE74D7MCFNNHN7SNCQS",
+    "nterm": "project lessons learned"
+  },
+  "budget of a project": {
+    "id": "01H6VGEFE70F0R9BJ0BZ8TVQ8Q",
+    "nterm": "project budget"
+  },
+  "lessons learned": {
+    "id": "01H6VGEFE74D7MCFNNHN7SNCQS",
+    "nterm": "project lessons learned"
+  },
+  "documentation map": {
+    "id": "01H6VGEFE48Z93HS870NDRC1BG",
+    "nterm": "documentation tree"
+  },
+  "purchase order": {
+    "id": "01H6VGEFEA81E20MQP515MSAVS",
+    "nterm": "source documents"
+  },
+  "strategy development": {
+    "id": "01H6VGEFEAVH6ZN4G5TGZZ21RB",
+    "nterm": "strategy documents"
+  },
+  "quality plan": {
+    "id": "01H6VGEFEA4EGM4X8EN1NFYEEA",
+    "nterm": "quality assurance plan"
+  },
+  "manager": {
+    "id": "01H6VGEFE72SKK65XWSJ0190C8",
+    "nterm": "project management (sfia)"
+  },
+  "strategic plan": {
+    "id": "01H6VGEFEAVH6ZN4G5TGZZ21RB",
+    "nterm": "strategy documents"
+  },
+  "competent staff": {
+    "id": "01H6VGEFE9XVWZQT5SJYWFH49A",
+    "nterm": "qualified personnel"
+  },
+  "project timeline": {
+    "id": "01H6VGEFE9DVE86GT712S15HER",
+    "nterm": "project schedule"
+  },
+  "documentation outline": {
+    "id": "01H6VGEFE48Z93HS870NDRC1BG",
+    "nterm": "documentation tree"
+  },
+  "rfq": {
+    "id": "01H6VGEFE4MX8FFPFZVTCKCX2P",
+    "nterm": "acquisition need"
+  },
+  "2023_02_23": {
+    "id": "01H6VGEFDZK698V73PRJBNETEB",
+    "nterm": "2023_02_23"
+  },
+  "project planning": {
+    "id": "01H6VGEFE84JW9045V7F5WFXGY",
+    "nterm": "project planning"
+  },
+  "project artifacts": {
+    "id": "01H6VGEFE8K7XMCANX7VKCF1X6",
+    "nterm": "project planning record"
+  },
+  "external condition": {
+    "id": "01H6VGEFE7D1TGTVXFA1X04ATT",
+    "nterm": "project constraints"
+  },
+  "systems engineering management plan": {
+    "id": "01H6VGEFEADB8YVWC3104ZDD6Y",
+    "nterm": "semp"
+  },
+  "project governance": {
+    "id": "01H6VGEFE74KH2VNMV25X1PCVS",
+    "nterm": "project direction"
+  },
+  "vee": {
+    "id": "01H6VGEFE57F74HEK2X20PQB6J",
+    "nterm": "life cycle models"
+  },
+  "quality assurance plan": {
+    "id": "01H6VGEFEA4EGM4X8EN1NFYEEA",
+    "nterm": "quality assurance plan"
+  },
+  "project management methodology tailoring": {
+    "id": "01H6VGEFE9EH02K53CZC5G4698",
+    "nterm": "project tailoring strategy"
+  },
+  "budget of a program": {
+    "id": "01H6VGEFE70F0R9BJ0BZ8TVQ8Q",
+    "nterm": "project budget"
+  },
+  "project constraints": {
+    "id": "01H6VGEFE7D1TGTVXFA1X04ATT",
+    "nterm": "project constraints"
+  },
+  "strategic map": {
+    "id": "01H6VGEFEAVH6ZN4G5TGZZ21RB",
+    "nterm": "strategy documents"
+  },
+  "technical management plan": {
+    "id": "01H6VGEFEADB8YVWC3104ZDD6Y",
+    "nterm": "semp"
+  },
+  "project outline": {
+    "id": "01H6VGEFE84JW9045V7F5WFXGY",
+    "nterm": "project planning"
+  },
+  "strategy documents": {
+    "id": "01H6VGEFEAVH6ZN4G5TGZZ21RB",
+    "nterm": "strategy documents"
+  },
+  "planning of projects": {
+    "id": "01H6VGEFE84JW9045V7F5WFXGY",
+    "nterm": "project planning"
+  },
+  "cash memo": {
+    "id": "01H6VGEFEA81E20MQP515MSAVS",
+    "nterm": "source documents"
+  },
+  "program governance": {
+    "id": "01H6VGEFE74KH2VNMV25X1PCVS",
+    "nterm": "project direction"
+  },
+  "bottleneck": {
+    "id": "01H6VGEFE7D1TGTVXFA1X04ATT",
+    "nterm": "project constraints"
+  },
+  "project tailoring strategy": {
+    "id": "01H6VGEFE9EH02K53CZC5G4698",
+    "nterm": "project tailoring strategy"
+  },
+  "project human resources needs": {
+    "id": "01H6VGEFE7EGY3MQ28NXXQBJ91",
+    "nterm": "project human resources needs"
+  },
+  "project pipeline": {
+    "id": "01H6VGEFE9PTYK0Y4MDG7TBMMA",
+    "nterm": "project portfolio"
+  },
+  "set of projects": {
+    "id": "01H6VGEFE9PTYK0Y4MDG7TBMMA",
+    "nterm": "project portfolio"
+  },
+  "quality policy": {
+    "id": "01H6VGEFEA4EGM4X8EN1NFYEEA",
+    "nterm": "quality assurance plan"
+  },
+  "human capital requirements": {
+    "id": "01H6VGEFE7EGY3MQ28NXXQBJ91",
+    "nterm": "project human resources needs"
+  },
+  "project review": {
+    "id": "01H6VGEFE74D7MCFNNHN7SNCQS",
+    "nterm": "project lessons learned"
+  },
+  "call for proposals": {
+    "id": "01H6VGEFE4MX8FFPFZVTCKCX2P",
+    "nterm": "acquisition need"
+  },
+  "qualified staff": {
+    "id": "01H6VGEFE9XVWZQT5SJYWFH49A",
+    "nterm": "qualified personnel"
+  },
+  "personnel needs": {
+    "id": "01H6VGEFE7EGY3MQ28NXXQBJ91",
+    "nterm": "project human resources needs"
+  },
+  "activate the project": {
+    "id": "01H6VGEFE48BDA6E2ZNPA5836H",
+    "nterm": "activate the project"
+  },
+  "qa corrective action": {
+    "id": "01H6VGEFE9BYHWHNMNPR0F3YWP",
+    "nterm": "qm corrective actions"
+  },
+  "acquisition need": {
+    "id": "01H6VGEFE4MX8FFPFZVTCKCX2P",
+    "nterm": "acquisition need"
+  },
+  "qualified personnel": {
+    "id": "01H6VGEFE9XVWZQT5SJYWFH49A",
+    "nterm": "qualified personnel"
+  },
+  "supply response": {
+    "id": "01H6VGEFEA47CGTBQA2SJ5W2GT",
+    "nterm": "supply response"
+  },
+  "pages_logseq_project management (sfia)": {
+    "id": "01H6VGEFE1DQMJX40SYGYWRWKF",
+    "nterm": "pages_logseq_project management (sfia)"
+  },
+  "lifecycle model": {
+    "id": "01H6VGEFE57F74HEK2X20PQB6J",
+    "nterm": "life cycle models"
+  },
+  "mission and vision": {
+    "id": "01H6VGEFEAVH6ZN4G5TGZZ21RB",
+    "nterm": "strategy documents"
+  },
+  "planning of the project": {
+    "id": "01H6VGEFE84JW9045V7F5WFXGY",
+    "nterm": "project planning"
+  },
+  "project deliverable": {
+    "id": "01H6VGEFE8K7XMCANX7VKCF1X6",
+    "nterm": "project planning record"
+  },
+  "detail the project": {
+    "id": "01H6VGEFE4G6XXKHETBKBZBHK8",
+    "nterm": "define the project"
+  },
+  "regulation": {
+    "id": "01H6VGEFE7D1TGTVXFA1X04ATT",
+    "nterm": "project constraints"
+  },
+  "project proposal": {
+    "id": "01H6VGEFE84JW9045V7F5WFXGY",
+    "nterm": "project planning"
+  },
+  "project post-mortem": {
+    "id": "01H6VGEFE74D7MCFNNHN7SNCQS",
+    "nterm": "project lessons learned"
+  },
+  "systems engineering plan": {
+    "id": "01H6VGEFEADB8YVWC3104ZDD6Y",
+    "nterm": "semp"
+  },
+  "project infrastructure requirements": {
+    "id": "01H6VGEFE7ZCVPBV0HH61T7T9B",
+    "nterm": "project infrastructure needs"
+  },
+  "program portfolio": {
+    "id": "01H6VGEFE9PTYK0Y4MDG7TBMMA",
+    "nterm": "project portfolio"
+  },
+  "strategic roadmap": {
+    "id": "01H6VGEFEAVH6ZN4G5TGZZ21RB",
+    "nterm": "strategy documents"
+  },
+  "program": {
+    "id": "01H6VGEFE9PTYK0Y4MDG7TBMMA",
+    "nterm": "project portfolio"
+  },
+  "outline the project": {
+    "id": "01H6VGEFE4G6XXKHETBKBZBHK8",
+    "nterm": "define the project"
+  },
+  "project management framework tailoring": {
+    "id": "01H6VGEFE9EH02K53CZC5G4698",
+    "nterm": "project tailoring strategy"
+  },
+  "pipeline of projects": {
+    "id": "01H6VGEFE9PTYK0Y4MDG7TBMMA",
+    "nterm": "project portfolio"
+  },
+  "project roadmap": {
+    "id": "01H6VGEFE9DVE86GT712S15HER",
+    "nterm": "project schedule"
+  },
+  "credit note": {
+    "id": "01H6VGEFEA81E20MQP515MSAVS",
+    "nterm": "source documents"
+  },
+  "documentation structure": {
+    "id": "01H6VGEFE48Z93HS870NDRC1BG",
+    "nterm": "documentation tree"
+  },
+  "pm": {
+    "id": "01H6VGEFE72SKK65XWSJ0190C8",
+    "nterm": "project management (sfia)"
+  },
+  "competent personnel": {
+    "id": "01H6VGEFE9XVWZQT5SJYWFH49A",
+    "nterm": "qualified personnel"
+  },
+  "preventive measure": {
+    "id": "01H6VGEFE9BYHWHNMNPR0F3YWP",
+    "nterm": "qm corrective actions"
+  },
+  "it strategy": {
+    "id": "01H6VGEFEAVH6ZN4G5TGZZ21RB",
+    "nterm": "strategy documents"
+  },
+  "petty cash voucher": {
+    "id": "01H6VGEFEA81E20MQP515MSAVS",
+    "nterm": "source documents"
+  },
+  "manpower requirements": {
+    "id": "01H6VGEFE7EGY3MQ28NXXQBJ91",
+    "nterm": "project human resources needs"
+  },
+  "qm corrective actions": {
+    "id": "01H6VGEFE9BYHWHNMNPR0F3YWP",
+    "nterm": "qm corrective actions"
+  },
+  "supporting documents": {
+    "id": "01H6VGEFEA81E20MQP515MSAVS",
+    "nterm": "source documents"
+  },
+  "pbs": {
+    "id": "01H6VGEFEAFZAR066A0Q4RJWND",
+    "nterm": "work breakdown structure"
+  },
+  "project planning record": {
+    "id": "01H6VGEFE8K7XMCANX7VKCF1X6",
+    "nterm": "project planning record"
+  },
+  "project manager": {
+    "id": "01H6VGEFE72SKK65XWSJ0190C8",
+    "nterm": "project management (sfia)"
+  },
+  "describe the project": {
+    "id": "01H6VGEFE4G6XXKHETBKBZBHK8",
+    "nterm": "define the project"
+  },
+  "project blueprint": {
+    "id": "01H6VGEFE84JW9045V7F5WFXGY",
+    "nterm": "project planning"
+  },
+  "life cycle methodology": {
+    "id": "01H6VGEFE57F74HEK2X20PQB6J",
+    "nterm": "life cycle models"
+  },
+  "planning of a project": {
+    "id": "01H6VGEFE84JW9045V7F5WFXGY",
+    "nterm": "project planning"
+  },
+  "program budget": {
+    "id": "01H6VGEFE70F0R9BJ0BZ8TVQ8Q",
+    "nterm": "project budget"
+  },
+  "project calendar": {
+    "id": "01H6VGEFE9DVE86GT712S15HER",
+    "nterm": "project schedule"
+  },
+  "project plan": {
+    "id": "01H6VGEFE9DVE86GT712S15HER",
+    "nterm": "project schedule"
+  },
+  "project strategy": {
+    "id": "01H6VGEFE84JW9045V7F5WFXGY",
+    "nterm": "project planning"
+  },
+  "wbs": {
+    "id": "01H6VGEFEAFZAR066A0Q4RJWND",
+    "nterm": "work breakdown structure"
+  },
+  "sales order": {
+    "id": "01H6VGEFEA81E20MQP515MSAVS",
+    "nterm": "source documents"
+  },
+  "2023-06-27t09_34_56.000z.desktop": {
+    "id": "01H6VGEFE2EQBKY0TRQRE9FC0R",
+    "nterm": "2023-06-27t09_34_56.000z.desktop"
+  },
+  "project enabler": {
+    "id": "01H6VGEFE7ZCVPBV0HH61T7T9B",
+    "nterm": "project infrastructure needs"
+  },
+  "limitation": {
+    "id": "01H6VGEFE7D1TGTVXFA1X04ATT",
+    "nterm": "project constraints"
+  },
+  "capa": {
+    "id": "01H6VGEFE9BYHWHNMNPR0F3YWP",
+    "nterm": "qm corrective actions"
+  },
+  "state the project": {
+    "id": "01H6VGEFE4G6XXKHETBKBZBHK8",
+    "nterm": "define the project"
+  },
+  "project management (sfia)": {
+    "id": "01H6VGEFE72SKK65XWSJ0190C8",
+    "nterm": "project management (sfia)"
+  },
+  "project lessons learned": {
+    "id": "01H6VGEFE74D7MCFNNHN7SNCQS",
+    "nterm": "project lessons learned"
+  },
+  "project funds": {
+    "id": "01H6VGEFE70F0R9BJ0BZ8TVQ8Q",
+    "nterm": "project budget"
+  },
+  "corporate strategy": {
+    "id": "01H6VGEFEAVH6ZN4G5TGZZ21RB",
+    "nterm": "strategy documents"
+  },
+  "life cycle models": {
+    "id": "01H6VGEFE57F74HEK2X20PQB6J",
+    "nterm": "life cycle models"
+  },
+  "response management": {
+    "id": "01H6VGEFEA47CGTBQA2SJ5W2GT",
+    "nterm": "supply response"
+  },
+  "project design": {
+    "id": "01H6VGEFE84JW9045V7F5WFXGY",
+    "nterm": "project planning"
+  },
+  "engineering plan": {
+    "id": "01H6VGEFEADB8YVWC3104ZDD6Y",
+    "nterm": "semp"
+  },
+  "project schedule": {
+    "id": "01H6VGEFE9DVE86GT712S15HER",
+    "nterm": "project schedule"
+  },
+  "quality assurance process": {
+    "id": "01H6VGEFEA4EGM4X8EN1NFYEEA",
+    "nterm": "quality assurance plan"
+  },
+  "r&d plan": {
+    "id": "01H6VGEFEADB8YVWC3104ZDD6Y",
+    "nterm": "semp"
+  },
+  "project management process tailoring": {
+    "id": "01H6VGEFE9EH02K53CZC5G4698",
+    "nterm": "project tailoring strategy"
+  },
+  "skilled staff": {
+    "id": "01H6VGEFE9XVWZQT5SJYWFH49A",
+    "nterm": "qualified personnel"
+  },
+  "life cycle processes": {
+    "id": "01H6VGEFE57F74HEK2X20PQB6J",
+    "nterm": "life cycle models"
+  },
+  "spiral": {
+    "id": "01H6VGEFE57F74HEK2X20PQB6J",
+    "nterm": "life cycle models"
+  },
+  "waterfall": {
+    "id": "01H6VGEFE57F74HEK2X20PQB6J",
+    "nterm": "life cycle models"
+  },
+  "documentation chart": {
+    "id": "01H6VGEFE48Z93HS870NDRC1BG",
+    "nterm": "documentation tree"
+  },
+  "project guidance": {
+    "id": "01H6VGEFE74KH2VNMV25X1PCVS",
+    "nterm": "project direction"
+  },
+  "project retrospective": {
+    "id": "01H6VGEFE74D7MCFNNHN7SNCQS",
+    "nterm": "project lessons learned"
+  },
+  "organization strategic plan": {
+    "id": "01H6VGEFE5MVT631P16X0ZEXQR",
+    "nterm": "organization strategic plan"
+  },
+  "project portfolio": {
+    "id": "01H6VGEFE9PTYK0Y4MDG7TBMMA",
+    "nterm": "project portfolio"
+  },
+  "planning projects": {
+    "id": "01H6VGEFE84JW9045V7F5WFXGY",
+    "nterm": "project planning"
+  },
+  "ishikawa diagram": {
+    "id": "01H6VGEFE9BYHWHNMNPR0F3YWP",
+    "nterm": "qm corrective actions"
+  },
+  "project infrastructure needs": {
+    "id": "01H6VGEFE7ZCVPBV0HH61T7T9B",
+    "nterm": "project infrastructure needs"
+  },
+  "qa plan": {
+    "id": "01H6VGEFEA4EGM4X8EN1NFYEEA",
+    "nterm": "quality assurance plan"
+  },
+  "project management": {
+    "id": "01H6VGEFE72SKK65XWSJ0190C8",
+    "nterm": "project management (sfia)"
+  },
+  "competitive bid request": {
+    "id": "01H6VGEFE4MX8FFPFZVTCKCX2P",
+    "nterm": "acquisition need"
+  },
+  "skilled personnel": {
+    "id": "01H6VGEFE9XVWZQT5SJYWFH49A",
+    "nterm": "qualified personnel"
+  },
+  "strategy execution": {
+    "id": "01H6VGEFEAVH6ZN4G5TGZZ21RB",
+    "nterm": "strategy documents"
+  },
+  "documentation archive": {
+    "id": "01H6VGEFE48Z93HS870NDRC1BG",
+    "nterm": "documentation tree"
+  },
+  "prohibition": {
+    "id": "01H6VGEFE7D1TGTVXFA1X04ATT",
+    "nterm": "project constraints"
+  },
+  "human assets requirements": {
+    "id": "01H6VGEFE7EGY3MQ28NXXQBJ91",
+    "nterm": "project human resources needs"
+  },
+  "plan project and technical management": {
+    "id": "01H6VGEFE6AGETFZ2ZR4E3BNV9",
+    "nterm": "plan project and technical management"
+  },
+  "project budget": {
+    "id": "01H6VGEFE70F0R9BJ0BZ8TVQ8Q",
+    "nterm": "project budget"
+  },
+  "8d": {
+    "id": "01H6VGEFE9BYHWHNMNPR0F3YWP",
+    "nterm": "qm corrective actions"
+  }
+}
