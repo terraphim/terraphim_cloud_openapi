@@ -3,14 +3,21 @@ use poem_openapi::{param::Query, payload::PlainText, OpenApi, OpenApiService};
 use poem_openapi::{payload::Json, ApiResponse, Object, Tags};
 use serde::{Deserialize, Serialize};
 use std::error::Error;
-
+use itertools::Itertools;
 extern crate config;
 extern crate serde;
 mod settings;
 
 use settings::Settings;
+use regex::Regex;
 
-use redis::{FromRedisValue, Value};
+#[macro_use]
+extern crate lazy_static;
+lazy_static! {
+    static ref RE: Regex = Regex::new(r"[?!|]\s+").unwrap();
+}
+
+use redis::{FromRedisValue, Value, Commands};
 use redis_derive::{FromRedisValue, ToRedisArgs};
 use ulid::Ulid;
 
@@ -160,19 +167,50 @@ enum UpdateArticleResponse {
     NotFound,
 }
 
-fn parse_article(article: &Article, role: &str, automata_url: &str) -> Vec<Matched> {
-    let mut nodes = Vec::new();
+async fn parse_article(article: &Article, id:&str,role: &str, automata_url: &str, con: &mut redis::Connection) -> redis::RedisResult<()>{
+    
     for sentence in split_paragraphs(&article.body) {
         println!("{}", sentence);
+        let shard_id= "{06S}";
         // for each role run
         // println!("Role {}", role);
         // let automata_url = "./crates/terraphim_automata/data/output.csv.gz";
         let automata = load_automata(automata_url).unwrap();
         let matched_ents = find_matches(sentence, automata, false).expect("Failed to find matches");
         println!("Nodes {:?}", matched_ents);
-        nodes.extend(matched_ents);
+        
+        for pair in matched_ents.into_iter().combinations(2) {
+            println!("Pair {:?}", pair);
+            let source_entity_id = pair[0].id.clone();
+            let destination_entity_id = pair[1].id.clone();
+            let source_canonical_name = pair[0].term.clone();
+            let destination_canonical_name = pair[1].term.clone();
+            
+            let _: () = redis::cmd("XADD")
+            .arg(format!("edges_matched_{role}_{shard_id}"))
+            .arg("*")
+            .arg("source")
+            .arg(source_entity_id.clone())
+            .arg("destination")
+            .arg(destination_entity_id.clone())
+            .arg("source_name")
+            .arg(source_canonical_name)
+            .arg("destination_name")
+            .arg(destination_canonical_name)
+            .arg("rank")
+            .arg(1)
+            .arg("year")
+            .arg(2023)
+            .execute(con);
+            let _: () = redis::cmd("ZINCRBY")
+            .arg(format!("edges_scored:{}:{}",source_entity_id,destination_entity_id))
+            .arg(1)
+            .arg(&id)
+            .execute(con);
+
+        }
     }
-    nodes
+    Ok(())
 }
 
 struct Api;
@@ -203,6 +241,9 @@ impl Api {
             .arg(&*article)
             .query(&mut con)
             .unwrap();
+        let role= "project-manager";
+        let automata_url = "./test-data/term_to_id.json";
+        let _ = parse_article(&article, &id, role, automata_url, &mut con).await;
         // let nodes = vec![settings.redis_cluster_url.clone(),"redis://127.0.0.1:30002/".to_string()];
         // let cluster_client = ClusterClient::new(nodes).unwrap();
         // let mut cluster_connection = cluster_client.get_async_connection().await.unwrap();
@@ -215,10 +256,7 @@ impl Api {
         //     .arg(body)
         //     .query(&mut con)
         //     .unwrap();
-        let _: () = redis::cmd("SADD")
-            .arg("processed_docs_stage1")
-            .arg(&id)
-            .execute(&mut con);
+
         CreateArticleResponse::Ok(Json(id))
     }
 
@@ -327,16 +365,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 #[cfg(test)]
 mod tests {
+    use tracing_subscriber::fmt::format;
+
     use super::*;
 
     #[test]
     fn test_parse_article() {
-        use itertools::Itertools;
+        
         use serde_json;
         use std::fs;
         let input = fs::read_to_string("test-data/article.json").unwrap();
         let article: Article = serde_json::from_str(&input).unwrap();
         let role = "project-manager";
+        let shard_id = 1;
         let automata_url = "./test-data/term_to_id.json";
         let expected_output = vec![Matched {
             term: "project manager".to_string(),
@@ -345,9 +386,7 @@ mod tests {
             pos: Some((0, 14)),
         }];
         let nodes = parse_article(&article, role, automata_url);
-        for pair in nodes.into_iter().combinations(2) {
-            println!("Pair {:?}", pair);
-        }
+
         // assert_eq!(parse_article(&article,role, automata_url), expected_output);
     }
 }
