@@ -269,7 +269,7 @@ impl Api {
         println!("{:#?}", search_query);
         let role = search_query.role.as_deref().unwrap_or("");
         println!("Role {}", role);
-        let automata_url = "./crates/terraphim_automata/data/output.csv.gz";
+        let automata_url = "./test-data/term_to_id.json";
         let automata = load_automata(automata_url).unwrap();
         let nodes = match_nodes(&search_query.search_term, automata);
         println!("Nodes {:?}", nodes);

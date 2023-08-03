@@ -28,7 +28,7 @@ pub struct Edge {
 pub fn match_nodes(search_string: &str, automata: HashMap<String, Dictionary>) -> Vec<String> {
     let matched_ents = find_matches(search_string, automata, false).expect("Failed to find matches");
     let nodes: HashSet<String> = matched_ents.iter().map(|ent| ent.id.clone()).collect();
-    let nodes: Vec<String> = nodes.into_iter().collect();
+    let nodes: Vec<String> = nodes.into_iter().map(|node|format!("\"{node}\"")).collect();
     // let nodes: Vec<String> = Vec::new();
     // for ent in matched_ents.iter() {
     //     println!("Matched ent {:#?}", ent.id);
@@ -51,7 +51,8 @@ pub fn get_edges(
     let client = redis::Client::open(url).unwrap();
     let mut con = client.get_connection().unwrap();
     let graph_name = "cord19medical";
-    let ids = format!("[{}]", nodes.join(",")).replace("\"", "\'");
+    let ids = format!("[{}]", nodes.join(","));
+    // .replace("\"", "\\\"");
     
     // let query = if let Some(years) = years {
     //     let years: Vec<String> = years.iter().map(String::from).collect();
@@ -66,12 +67,13 @@ pub fn get_edges(
     // } else {
         // query withot years
         // };
-        let query =format!("WITH {ids} as ids MATCH (e:entity)-[r]->(t:entity) WHERE e.id IN ids RETURN DISTINCT e.id, t.id, max(r.rank), r.year ORDER BY r.rank DESC LIMIT {limits}", ids = ids, limits = limits);
+        let query =format!("CYPHER ids={ids} limits={limits} WITH $ids as ids MATCH (e:entity)-[r]->(t:entity) WHERE e.id IN ids RETURN DISTINCT e.id, t.id, max(r.rank), r.year ORDER BY r.rank DESC LIMIT $limits", ids = ids, limits = limits);
         println!("Query: {}", query);
         
         let result_set=redis::cmd("GRAPH.QUERY")
             .arg(graph_name)
             .arg(query)
+            // .arg("--compact")
             .query::<redis::Value>(&mut con)
             .unwrap();
     println!("Result set: {:?}", result_set);
