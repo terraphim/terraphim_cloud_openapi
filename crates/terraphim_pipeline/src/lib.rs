@@ -1,3 +1,5 @@
+use ahash::AHashMap;
+use memoize::memoize;
 use regex::Regex;
 use unicode_segmentation::UnicodeSegmentation;
 
@@ -10,6 +12,40 @@ pub fn split_paragraphs(paragraphs: &str) -> Vec<&str> {
     let sentences = UnicodeSegmentation::split_sentence_bounds(paragraphs);
     let parts = sentences.flat_map(|sentence| RE.split(sentence.trim()));
     parts.map(|part| part.trim()).collect()
+}
+
+/// Combining two numbers into a unique one: pairing functions.
+/// It uses "elegant pairing" (https://odino.org/combining-two-numbers-into-a-unique-one-pairing-functions/).
+/// also using memoize macro with Ahash hasher
+#[memoize(CustomHasher: ahash::AHashMap)]
+pub fn magic_pair(x: u64, y: u64) -> u64 {
+    if x >= y {
+        x * x + x + y
+    } else {
+        y * y + x
+    }
+}
+
+// Magic unpair
+// func unpair(z int) (int, int) {
+//   q := int(math.Floor(math.Sqrt(float64(z))))
+//     l := z - q * q
+
+//   if l < q {
+//       return l, q
+//   }
+
+//   return q, l - q
+// }
+#[memoize(CustomHasher: ahash::AHashMap)]
+pub fn magic_unpair(z: u64) -> (u64, u64) {
+    let q = (z as f64).sqrt().floor() as u64;
+    let l = z - q * q;
+    if l < q {
+        return (l, q);
+    } else {
+        return (q, l - q);
+    }
 }
 
 #[cfg(test)]
