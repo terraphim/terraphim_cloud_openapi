@@ -13,3 +13,4 @@ memoize = "0.4.0"
 ahash = {version="0.8.3", features=["serde"]}
 terraphim_automata = { path="../terraphim_automata"}
 itertools="0.10.5"
+ulid = {version = "1.0.0",features=["serde","uuid"]}
