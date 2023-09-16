@@ -2766,6 +2766,7 @@ dependencies = [
  "memoize",
  "regex",
  "terraphim_automata",
+ "ulid",
  "unicode-segmentation",
 ]
 

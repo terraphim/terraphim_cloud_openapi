@@ -23,7 +23,7 @@ fn main() {
     let matches3 = find_matches_ids(query, &dict_hash).unwrap();
     println!("Matched Ids {:?}", matches3);
     let mut v = Vec::new();
-    let mut rolegraph = RoleGraph::new(role, automata_url.to_string());
+    let mut rolegraph = RoleGraph::new(role, automata_url);
     let article_id = Ulid::new().to_string();
     for (a, b) in matches3.into_iter().tuple_windows() {
         println!("a {} b {}", a, b);
@@ -42,5 +42,5 @@ fn main() {
     // query: matched query to nodes
     // for each node return list of all edges (in this node)
     // sort by node rank, edge_rank, article_id rank
-    rolegraph.query();
+    rolegraph.query("Life cycle concepts and project direction");
 }

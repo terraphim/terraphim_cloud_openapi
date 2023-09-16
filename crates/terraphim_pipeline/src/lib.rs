@@ -4,8 +4,9 @@ use regex::Regex;
 use std::collections::hash_map::Entry;
 use std::collections::BTreeMap;
 use std::mem;
+use terraphim_automata::load_automata;
+use terraphim_automata::matcher::{find_matches_ids, Dictionary};
 use unicode_segmentation::UnicodeSegmentation;
-
 #[derive(Debug, Clone)]
 pub struct RoleGraph {
     // role filter
@@ -13,20 +14,38 @@ pub struct RoleGraph {
     nodes: AHashMap<u64, Node>,
     edges: AHashMap<u64, Edge>,
     automata_url: String,
+    dict_hash: AHashMap<String, Dictionary>,
 }
 impl RoleGraph {
-    pub fn new(role: String, automata_url: String) -> Self {
+    pub fn new(role: String, automata_url: &str) -> Self {
+        let dict_hash = load_automata(automata_url).unwrap();
         Self {
             role,
             nodes: AHashMap::new(),
             edges: AHashMap::new(),
-            automata_url: automata_url,
+            automata_url: automata_url.to_string(),
+            dict_hash: dict_hash,
         }
     }
-    pub fn query(&self) {
-        for (node_id, node) in &self.nodes {
-            println!("{:?}", node);
-            node.sort_edges_by_value();
+    pub fn query(&self, query_string: &str) {
+        println!("performing query");
+        let nodes = find_matches_ids(query_string, &self.dict_hash).unwrap_or(Vec::new());
+        for node_id in nodes.iter() {
+            println!("Matched node {:?}", node_id);
+            let node = self.nodes.get(node_id).unwrap();
+            println!("Node Rank {}", node.rank);
+            println!("Node connected to Edges {:?}", node.connected_with);
+            for each_edge_key in node.connected_with.iter() {
+                let each_edge = self.edges.get(each_edge_key).unwrap();
+                println!("Edge {:?}", each_edge);
+            }
+            // sort nodes by rank
+            //sort edges by rank
+            // sort article id by rank
+            // node rank is a weight for edge and edge rank is a weight for article_id
+            // create hashmap of output with article_id, rank to dedupe articles in output
+            // normalise output rank from 1 to number of records
+            // pre-sort article_id by rank using BtreeMap
         }
     }
     pub fn add_or_update_article(&mut self, article_id: String, x: u64, y: u64) {
@@ -44,6 +63,7 @@ impl RoleGraph {
             Entry::Occupied(entry) => {
                 let mut node = entry.into_mut();
                 node.rank += 1;
+                node.connected_with.push(edge.id);
             }
         };
     }
@@ -89,25 +109,26 @@ pub struct Node {
     id: u64,
     // number of co-occureneces
     rank: u64,
-    connected_with: AHashMap<u64, Edge>,
+    connected_with: Vec<u64>,
 }
 impl Node {
     fn new(id: u64, edge: Edge) -> Self {
-        let mut connected_with = AHashMap::new();
-        connected_with.insert(edge.id, edge);
+        let mut connected_with = Vec::new();
+        connected_with.push(edge.id);
         Self {
             id,
             rank: 1,
             connected_with: connected_with,
         }
     }
-    pub fn sort_edges_by_value(&self) {
-        // let count_b: BTreeMap<&u64, &Edge> =
-        // self.connected_with.iter().map(|(k, v)| (v, k)).collect();
-        for (k, v) in self.connected_with.iter().map(|(k, v)| (v, k)) {
-            println!("k {:?} v {:?}", k, v);
-        }
-    }
+    // pub fn sort_edges_by_value(&self) {
+    //     // let count_b: BTreeMap<&u64, &Edge> =
+    //     // self.connected_with.iter().map(|(k, v)| (v, k)).collect();
+    //     // for (k, v) in self.connected_with.iter().map(|(k, v)| (v.rank, k)) {
+    //     // println!("k {:?} v {:?}", k, v);
+    //     // }
+    //     println!("Connected with {:?}", self.connected_with);
+    // }
 }
 
 #[macro_use]
