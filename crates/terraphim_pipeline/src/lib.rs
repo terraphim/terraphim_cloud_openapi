@@ -7,14 +7,33 @@ use std::mem;
 use terraphim_automata::load_automata;
 use terraphim_automata::matcher::{find_matches_ids, Dictionary};
 use unicode_segmentation::UnicodeSegmentation;
+
+#[derive(Debug, Clone)]
+pub struct Document {
+    id: String,
+    // matched to edges
+    matched_to: Vec<u64>,
+}
+
+
 #[derive(Debug, Clone)]
 pub struct RoleGraph {
     // role filter
     role: String,
     nodes: AHashMap<u64, Node>,
     edges: AHashMap<u64, Edge>,
+    documents: AHashMap<String, Document>,
     automata_url: String,
     dict_hash: AHashMap<String, Dictionary>,
+    // counters to make ranking queries easier 
+    node_count: u64,
+    edge_count: u64,
+    document_count: u64,
+    // normalization of weights for weighted average
+    normalizer: f64,
+    weight_nodes: f64,
+    weight_edges: f64,
+    weight_articles: f64,
 }
 impl RoleGraph {
     pub fn new(role: String, automata_url: &str) -> Self {
@@ -23,30 +42,82 @@ impl RoleGraph {
             role,
             nodes: AHashMap::new(),
             edges: AHashMap::new(),
+            documents: AHashMap::new(),
             automata_url: automata_url.to_string(),
             dict_hash: dict_hash,
+            node_count: 0,
+            edge_count: 0,
+            document_count: 0,
+            normalizer: 1.0,
+            weight_nodes: 1.0,
+            weight_edges: 1.0,
+            weight_articles: 1.0,
         }
     }
+    //  Query the graph using a query string, returns a list of article ids ranked and weighted by weighted mean average of node rank, edge rank and article rank
+    // node rank is a weight for edge and edge rank is a weight for article_id
+    // create hashmap of output with article_id, rank to dedupe articles in output
+    // normalise output rank from 1 to number of records
+    // pre-sort article_id by rank using BtreeMap
+    //  overall weighted average is calculated as (node_rank*edge_rank*article_rank)/(node_rank+edge_rank+article_rank)
     pub fn query(&self, query_string: &str) {
         println!("performing query");
-        let nodes = find_matches_ids(query_string, &self.dict_hash).unwrap_or(Vec::new());
+        // FIXME: handle case when no matches found with empty non empty vector - otherwise all ranks will blow up
+        let nodes = find_matches_ids(query_string, &self.dict_hash).unwrap_or(Vec::from([1]));
+        let mut non_sorted_vector=Vec::new();
+        // let mut sorted_vector_by_rank_weighted: Vec<_>=Vec::new();
         for node_id in nodes.iter() {
             println!("Matched node {:?}", node_id);
             let node = self.nodes.get(node_id).unwrap();
-            println!("Node Rank {}", node.rank);
+            let node_rank=node.rank;
+            println!("Node Rank {}", node_rank);
             println!("Node connected to Edges {:?}", node.connected_with);
             for each_edge_key in node.connected_with.iter() {
                 let each_edge = self.edges.get(each_edge_key).unwrap();
-                println!("Edge {:?}", each_edge);
+                println!("Edge Details{:?}", each_edge);
+                let edge_rank=each_edge.rank;
+                for (article_id, rank) in each_edge.doc_hash.iter() {
+                    // final rank is a weighted average of node rank and edge rank and article rank
+                    //  weighted average  can be calculated: sum of (weight*rank)/sum of weights for each node, edge and article.
+                    //  rank is a number of co-occurences, the output will be normalised within query results output, potentially it can be normalised across all articles
+                    // see cleora train function
+                    // TODO: design question: duplicated articles in output should be removed, what shall happens with rank?
+                    println!("Article id {} Rank {}", article_id, rank);
+                    non_sorted_vector.push((article_id, rank));
+
+                }
             }
+            
+            //TODO: create top_k_nodes function where
             // sort nodes by rank
+            // TODO create top_k_edges function where
             //sort edges by rank
+            // TODO create top_k_articles function where
             // sort article id by rank
-            // node rank is a weight for edge and edge rank is a weight for article_id
-            // create hashmap of output with article_id, rank to dedupe articles in output
-            // normalise output rank from 1 to number of records
-            // pre-sort article_id by rank using BtreeMap
+
         }
+            println!("Vector to be Sorted{:?}", non_sorted_vector);
+            // sorted_vector.sort_by(|a, b| b.1.cmp(&a.1));
+            non_sorted_vector.sort_by(|a, b| b.1.cmp(a.1));
+            println!("Sorted Vector by rank {:?}", non_sorted_vector);
+            let node_len=self.nodes.len() as u64;
+            println!("Node Length {}", node_len);
+            let edge_len=self.edges.len() as u64;
+            println!("Edge Length {}", edge_len);
+            let article_len=non_sorted_vector.len() as u64;
+            println!("Article Length {}", article_len);
+            let normalizer=f64::from_bits(node_len+edge_len+article_len);
+            let weight_node=f64::from_bits(node_len)/normalizer;
+            let weight_edge=f64::from_bits(edge_len)/normalizer;
+            let weight_article=f64::from_bits(article_len)/normalizer;
+            println!("Weight Node {}", weight_node);
+            println!("Weight Edge {}", weight_edge);
+            println!("Weight Article {}", weight_article);
+            // for (article_id,rank) in non_sorted_vector.iter(){
+            //     let weighted_rank=(weight_node*node_rank as f64)+(weight_edge*edge_rank as f64)+(weight_article*rank as f64)/(weight_node+weight_edge+weight_article);
+            //     println!("Article id {} Weighted Rank {}", article_id, weighted_rank);
+            //     sorted_vector_by_rank_weighted.push((article_id, weighted_rank));
+            // }
     }
     pub fn add_or_update_article(&mut self, article_id: String, x: u64, y: u64) {
         let edge = magic_pair(x, y);
@@ -59,6 +130,7 @@ impl RoleGraph {
             Entry::Vacant(_) => {
                 let node = Node::new(node_id, edge.clone());
                 self.nodes.insert(node.id, node);
+                self.node_count += 1;
             }
             Entry::Occupied(entry) => {
                 let mut node = entry.into_mut();
@@ -72,6 +144,7 @@ impl RoleGraph {
             Entry::Vacant(_) => {
                 let edge = Edge::new(edge_key, article_id);
                 self.edges.insert(edge.id, edge.clone());
+                self.edge_count += 1;
                 edge
             }
             Entry::Occupied(entry) => {
@@ -90,7 +163,7 @@ pub struct Edge {
     id: u64,
     rank: u64,
     // hashmap document_id, rank
-    doc_hash: AHashMap<String, u32>,
+    doc_hash: AHashMap<String, u64>,
 }
 impl Edge {
     pub fn new(id: u64, article_id: String) -> Self {
