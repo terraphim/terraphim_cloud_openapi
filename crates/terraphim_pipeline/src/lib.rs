@@ -1,5 +1,6 @@
 use ahash::{AHashMap, HashMap};
 use memoize::memoize;
+use itertools::Itertools;
 use regex::Regex;
 use std::collections::hash_map::Entry;
 use std::collections::BTreeMap;
@@ -7,13 +8,28 @@ use std::mem;
 use terraphim_automata::load_automata;
 use terraphim_automata::matcher::{find_matches_ids, Dictionary};
 use unicode_segmentation::UnicodeSegmentation;
+// use log::{ info, warn, error, debug};
+use tracing::{debug, error, info, span, warn, Level};
 
+
+// Reference to external storage of documents, traditional indexes use document, aka article or entity.
 #[derive(Debug, Clone)]
 pub struct Document {
     id: String,
     // matched to edges
-    matched_to: Vec<u64>,
+    matched_to: Vec<Edge>,
+    rank: u64,
+    //normalized rank
+    normalized_rank: f32,
 }
+
+
+//TODO: create top_k_nodes function where
+// sort nodes by rank
+// TODO create top_k_edges function where
+//sort edges by rank
+// TODO create top_k_documents function where
+// sort document id by rank
 
 
 #[derive(Debug, Clone)]
@@ -25,15 +41,7 @@ pub struct RoleGraph {
     documents: AHashMap<String, Document>,
     automata_url: String,
     dict_hash: AHashMap<String, Dictionary>,
-    // counters to make ranking queries easier 
-    node_count: u64,
-    edge_count: u64,
-    document_count: u64,
-    // normalization of weights for weighted average
-    normalizer: f64,
-    weight_nodes: f64,
-    weight_edges: f64,
-    weight_articles: f64,
+
 }
 impl RoleGraph {
     pub fn new(role: String, automata_url: &str) -> Self {
@@ -45,83 +53,102 @@ impl RoleGraph {
             documents: AHashMap::new(),
             automata_url: automata_url.to_string(),
             dict_hash: dict_hash,
-            node_count: 0,
-            edge_count: 0,
-            document_count: 0,
-            normalizer: 1.0,
-            weight_nodes: 1.0,
-            weight_edges: 1.0,
-            weight_articles: 1.0,
+
         }
     }
-    //  Query the graph using a query string, returns a list of article ids ranked and weighted by weighted mean average of node rank, edge rank and article rank
-    // node rank is a weight for edge and edge rank is a weight for article_id
-    // create hashmap of output with article_id, rank to dedupe articles in output
+    //  Query the graph using a query string, returns a list of document ids ranked and weighted by weighted mean average of node rank, edge rank and document rank
+
+    // node rank is a weight for edge and edge rank is a weight for document_id
+    // create hashmap of output with document_id, rank to dedupe documents in output
     // normalise output rank from 1 to number of records
-    // pre-sort article_id by rank using BtreeMap
-    //  overall weighted average is calculated as (node_rank*edge_rank*article_rank)/(node_rank+edge_rank+article_rank)
-    pub fn query(&self, query_string: &str) {
-        println!("performing query");
+    // pre-sort document_id by rank using BtreeMap
+    //  overall weighted average is calculated a weighted average of node rank and edge rank and document rank
+    //  weighted average  can be calculated: sum of (weight*rank)/sum of weights for each node, edge and document.
+    //  rank is a number of co-occurences normalised over number of documents (entities), see cleora train function
+    // YAGNI: at the moment I don't need it, so parked
+    pub fn normalise(&mut self){
+        let node_len=self.nodes.len() as u32;
+        warn!("Node Length {}", node_len);
+        let edge_len=self.edges.len() as u32;
+        warn!("Edge Length {}", edge_len);
+        let document_count=self.documents.len() as u32 ;
+        warn!("document Length {}", document_count);
+        let normalizer=f32::from_bits(node_len+edge_len+document_count);
+        let weight_node=f32::from_bits(node_len)/normalizer;
+        let weight_edge=f32::from_bits(edge_len)/normalizer;
+        let weight_document=f32::from_bits(document_count)/normalizer;
+        warn!("Weight Node {}", weight_node);
+        warn!("Weight Edge {}", weight_edge);
+        warn!("Weight document {}", weight_document);
+        !todo!("Normalise node, edge and document rank")
+        // for each node for each edge for each document
+        // for (document_id,rank) in self.documents.iter(){
+        //     let weighted_rank=(weight_node*node_rank as f32)+(weight_edge*edge_rank as f32)+(weight_document*rank as f32)/(weight_node+weight_edge+weight_document);
+        //     warn!("document id {} Weighted Rank {}", document_id, weighted_rank);
+        //     sorted_vector_by_rank_weighted.push((document_id, weighted_rank));
+        // }
+
+
+    }
+
+
+    pub fn query(&self, query_string: &str)->Vec<(&String, Document)> {
+        warn!("performing query");
         // FIXME: handle case when no matches found with empty non empty vector - otherwise all ranks will blow up
         let nodes = find_matches_ids(query_string, &self.dict_hash).unwrap_or(Vec::from([1]));
-        let mut non_sorted_vector=Vec::new();
-        // let mut sorted_vector_by_rank_weighted: Vec<_>=Vec::new();
+        
+        let mut results_map= AHashMap::new();
         for node_id in nodes.iter() {
-            println!("Matched node {:?}", node_id);
+            // warn!("Matched node {:?}", node_id);
             let node = self.nodes.get(node_id).unwrap();
             let node_rank=node.rank;
-            println!("Node Rank {}", node_rank);
-            println!("Node connected to Edges {:?}", node.connected_with);
+            // warn!("Node Rank {}", node_rank);
+            // warn!("Node connected to Edges {:?}", node.connected_with);
             for each_edge_key in node.connected_with.iter() {
                 let each_edge = self.edges.get(each_edge_key).unwrap();
-                println!("Edge Details{:?}", each_edge);
+                warn!("Edge Details{:?}", each_edge);
                 let edge_rank=each_edge.rank;
-                for (article_id, rank) in each_edge.doc_hash.iter() {
-                    // final rank is a weighted average of node rank and edge rank and article rank
-                    //  weighted average  can be calculated: sum of (weight*rank)/sum of weights for each node, edge and article.
-                    //  rank is a number of co-occurences, the output will be normalised within query results output, potentially it can be normalised across all articles
-                    // see cleora train function
-                    // TODO: design question: duplicated articles in output should be removed, what shall happens with rank?
-                    println!("Article id {} Rank {}", article_id, rank);
-                    non_sorted_vector.push((article_id, rank));
+                for (document_id, rank) in each_edge.doc_hash.iter() {
+                    let total_rank= node_rank + edge_rank + rank;
+                    match results_map.entry(document_id){
+                        Entry::Vacant(_) => {
+                            let document= Document{
+                                id: document_id.to_string(),
+                                matched_to: vec![each_edge.clone()],
+                                rank: total_rank,
+                                normalized_rank: 0.0,
+                            };
+                            
+                            results_map.insert(document_id, document);
+                        }
+                        Entry::Occupied(entry) => {
+                            let document = entry.into_mut();       
+                            document.rank += 1;
+                            document.matched_to.push(each_edge.clone());
+                            document.matched_to.dedup_by_key(|k| k.id.clone());
+                        }
+                    }
 
                 }
             }
-            
-            //TODO: create top_k_nodes function where
-            // sort nodes by rank
-            // TODO create top_k_edges function where
-            //sort edges by rank
-            // TODO create top_k_articles function where
-            // sort article id by rank
 
         }
-            println!("Vector to be Sorted{:?}", non_sorted_vector);
-            // sorted_vector.sort_by(|a, b| b.1.cmp(&a.1));
-            non_sorted_vector.sort_by(|a, b| b.1.cmp(a.1));
-            println!("Sorted Vector by rank {:?}", non_sorted_vector);
-            let node_len=self.nodes.len() as u64;
-            println!("Node Length {}", node_len);
-            let edge_len=self.edges.len() as u64;
-            println!("Edge Length {}", edge_len);
-            let article_len=non_sorted_vector.len() as u64;
-            println!("Article Length {}", article_len);
-            let normalizer=f64::from_bits(node_len+edge_len+article_len);
-            let weight_node=f64::from_bits(node_len)/normalizer;
-            let weight_edge=f64::from_bits(edge_len)/normalizer;
-            let weight_article=f64::from_bits(article_len)/normalizer;
-            println!("Weight Node {}", weight_node);
-            println!("Weight Edge {}", weight_edge);
-            println!("Weight Article {}", weight_article);
-            // for (article_id,rank) in non_sorted_vector.iter(){
-            //     let weighted_rank=(weight_node*node_rank as f64)+(weight_edge*edge_rank as f64)+(weight_article*rank as f64)/(weight_node+weight_edge+weight_article);
-            //     println!("Article id {} Weighted Rank {}", article_id, weighted_rank);
-            //     sorted_vector_by_rank_weighted.push((article_id, weighted_rank));
-            // }
+            // warn!("Results Map {:#?}", results_map);
+            let mut  hash_vec = results_map.into_iter().collect::<Vec<_>>();
+            hash_vec.sort_by(|a, b| b.1.rank.cmp(&a.1.rank));
+            hash_vec
+  
     }
-    pub fn add_or_update_article(&mut self, article_id: String, x: u64, y: u64) {
+    pub fn parse_document_to_pair(&mut self, document_id: String,text:&str){
+        let matches = find_matches_ids(text, &self.dict_hash).unwrap();
+        for (a, b) in matches.into_iter().tuple_windows() {
+            self.add_or_update_document(document_id.clone(), a, b);
+        }
+
+    }
+    pub fn add_or_update_document(&mut self, document_id: String, x: u64, y: u64) {
         let edge = magic_pair(x, y);
-        let edge = self.init_or_update_edge(edge, article_id);
+        let edge = self.init_or_update_edge(edge, document_id);
         self.init_or_update_node(x, &edge);
         self.init_or_update_node(y, &edge);
     }
@@ -130,26 +157,25 @@ impl RoleGraph {
             Entry::Vacant(_) => {
                 let node = Node::new(node_id, edge.clone());
                 self.nodes.insert(node.id, node);
-                self.node_count += 1;
+                
             }
             Entry::Occupied(entry) => {
-                let mut node = entry.into_mut();
+                let node = entry.into_mut();
                 node.rank += 1;
                 node.connected_with.push(edge.id);
             }
         };
     }
-    fn init_or_update_edge(&mut self, edge_key: u64, article_id: String) -> Edge {
+    fn init_or_update_edge(&mut self, edge_key: u64, document_id: String) -> Edge {
         let edge = match self.edges.entry(edge_key) {
             Entry::Vacant(_) => {
-                let edge = Edge::new(edge_key, article_id);
+                let edge = Edge::new(edge_key, document_id);
                 self.edges.insert(edge.id, edge.clone());
-                self.edge_count += 1;
                 edge
             }
             Entry::Occupied(entry) => {
-                let mut edge = entry.into_mut();
-                *edge.doc_hash.entry(article_id).or_insert(1) += 1;
+                let edge = entry.into_mut();
+                *edge.doc_hash.entry(document_id).or_insert(1) += 1;
                 let edge_read = edge.clone();
                 edge_read
             }
@@ -166,9 +192,9 @@ pub struct Edge {
     doc_hash: AHashMap<String, u64>,
 }
 impl Edge {
-    pub fn new(id: u64, article_id: String) -> Self {
+    pub fn new(id: u64, document_id: String) -> Self {
         let mut doc_hash = AHashMap::new();
-        doc_hash.insert(article_id, 1);
+        doc_hash.insert(document_id, 1);
         Self {
             id,
             rank: 1,
@@ -198,9 +224,9 @@ impl Node {
     //     // let count_b: BTreeMap<&u64, &Edge> =
     //     // self.connected_with.iter().map(|(k, v)| (v, k)).collect();
     //     // for (k, v) in self.connected_with.iter().map(|(k, v)| (v.rank, k)) {
-    //     // println!("k {:?} v {:?}", k, v);
+    //     // warn!("k {:?} v {:?}", k, v);
     //     // }
-    //     println!("Connected with {:?}", self.connected_with);
+    //     warn!("Connected with {:?}", self.connected_with);
     // }
 }
 
@@ -211,9 +237,11 @@ lazy_static! {
 }
 pub fn split_paragraphs(paragraphs: &str) -> Vec<&str> {
     let sentences = UnicodeSegmentation::split_sentence_bounds(paragraphs);
-    let parts = sentences.flat_map(|sentence| RE.split(sentence.trim()));
-    parts.map(|part| part.trim()).collect()
+    let parts = sentences.flat_map(|sentence| RE.split(sentence.trim_end_matches(char::is_whitespace)));
+    parts.map(|part| part.trim()).filter(|part|!part.is_empty()).collect()
 }
+
+
 
 /// Combining two numbers into a unique one: pairing functions.
 /// It uses "elegant pairing" (https://odino.org/combining-two-numbers-into-a-unique-one-pairing-functions/).
@@ -240,7 +268,7 @@ pub fn magic_pair(x: u64, y: u64) -> u64 {
 // }
 #[memoize(CustomHasher: ahash::AHashMap)]
 pub fn magic_unpair(z: u64) -> (u64, u64) {
-    let q = (z as f64).sqrt().floor() as u64;
+    let q = (z as f32).sqrt().floor() as u64;
     let l = z - q * q;
     if l < q {
         return (l, q);
@@ -252,13 +280,81 @@ pub fn magic_unpair(z: u64) -> (u64, u64) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use itertools::Itertools;
+    use terraphim_automata::load_automata;
+    use terraphim_automata::matcher::{find_matches, find_matches_ids, replace_matches, Dictionary};
+
+    use ulid::Ulid;
 
     #[test]
-    fn it_works() {
+    fn test_split_paragraphs() {
         let paragraph = "This is the first sentence.\n\n This is the second sentence. This is the second sentence? This is the second sentence| This is the second sentence!\n\nThis is the third sentence. Mr. John Johnson Jr. was born in the U.S.A but earned his Ph.D. in Israel before joining Nike Inc. as an engineer. He also worked at craigslist.org as a business analyst.";
-        for sentence in split_paragraphs(paragraph) {
-            println!("{}", sentence);
+        let sentences = split_paragraphs(paragraph);
+        assert_eq!(sentences.len(), 9);
+        assert_eq!(sentences[0], "This is the first sentence.");
+        assert_eq!(sentences[1], "This is the second sentence.");
+        assert_eq!(sentences[2], "This is the second sentence?");
+        assert_eq!(sentences[3], "This is the second sentence");
+        assert_eq!(sentences[4], "This is the second sentence!");
+        assert_eq!(sentences[5], "This is the third sentence.");
+        assert_eq!(sentences[6], "Mr.");
+        assert_eq!(sentences[7],"John Johnson Jr. was born in the U.S.A but earned his Ph.D. in Israel before joining Nike Inc. as an engineer.");
+        assert_eq!(sentences[8], "He also worked at craigslist.org as a business analyst.");
+    }
+    
+    #[test]
+    fn test_find_matches() {
+        let query = "I am a text with the word Life cycle concepts and bar and Trained operators and maintainers, project direction, some bingo words Paradigm Map and project planning, then again: some bingo words Paradigm Map and project planning, then repeats: Trained operators and maintainers, project direction";
+        let dict_hash = load_automata("https://system-operator.s3.eu-west-2.amazonaws.com/term_to_id.json").unwrap();
+        let matches = find_matches(query, dict_hash.clone(), false).unwrap();
+        assert_eq!(matches.len(), 7);
+    }
+    
+    #[test]
+    fn test_replace_matches() {
+        let query = "I am a text with the word Life cycle concepts and bar and Trained operators and maintainers, project direction, some bingo words Paradigm Map and project planning, then again: some bingo words Paradigm Map and project planning, then repeats: Trained operators and maintainers, project direction";
+        let dict_hash = load_automata("https://system-operator.s3.eu-west-2.amazonaws.com/term_to_id.json").unwrap();
+        let matches = replace_matches(query, dict_hash.clone()).unwrap();
+        assert_eq!(matches.len(), 171);
+    }
+    
+    #[test]
+    fn test_find_matches_ids() {
+        let query = "I am a text with the word Life cycle concepts and bar and Trained operators and maintainers, project direction, some bingo words Paradigm Map and project planning, then again: some bingo words Paradigm Map and project planning, then repeats: Trained operators and maintainers, project direction";
+        let dict_hash = load_automata("https://system-operator.s3.eu-west-2.amazonaws.com/term_to_id.json").unwrap();
+        let matches = find_matches_ids(query, &dict_hash).unwrap();
+        assert_eq!(matches.len(), 7);
+    }
+    
+    #[test]
+    fn test_rolegraph() {
+        let role = "system operator".to_string();
+        let automata_url = "https://system-operator.s3.eu-west-2.amazonaws.com/term_to_id.json";
+        let dict_hash = load_automata(automata_url).unwrap();
+        let mut rolegraph = RoleGraph::new(role, automata_url);
+        let article_id = Ulid::new().to_string();
+        let query = "I am a text with the word Life cycle concepts and bar and Trained operators and maintainers, project direction, some bingo words Paradigm Map and project planning, then again: some bingo words Paradigm Map and project planning, then repeats: Trained operators and maintainers, project direction";
+        let matches = find_matches_ids(query, &dict_hash).unwrap();
+        for (a, b) in matches.into_iter().tuple_windows() {
+            rolegraph.add_or_update_document(article_id.clone(), a, b);
         }
-        // assert_eq!(result, 4);
+        let article_id2= Ulid::new().to_string();
+        let query2 = "I am a text with the word Life cycle concepts and bar and maintainers, some bingo words Paradigm Map and project planning, then again: some bingo words Paradigm Map and project planning, then repeats: Trained operators and maintainers, project direction";
+        let matches2 = find_matches_ids(query2, &dict_hash).unwrap();
+        for (a, b) in matches2.into_iter().tuple_windows() {
+            rolegraph.add_or_update_document(article_id2.clone(), a, b);
+        }
+        let article_id3= Ulid::new().to_string();
+        let query3 = "I am a text with the word Life cycle concepts and bar and maintainers, some bingo words Paradigm Map and project planning, then again: some bingo words Paradigm Map and project planning, then repeats: Trained operators and maintainers, project direction";
+        let matches3 = find_matches_ids(query3, &dict_hash).unwrap();
+        for (a, b) in matches3.into_iter().tuple_windows() {
+            rolegraph.add_or_update_document(article_id3.clone(), a, b);
+        }
+        let article_id4= "ArticleID4".to_string();
+        let query4 = "I am a text with the word Life cycle concepts and bar and maintainers, some bingo words, then again: some bingo words Paradigm Map and project planning, then repeats: Trained operators and maintainers, project direction";
+        rolegraph.parse_document_to_pair(article_id4,query4);
+        warn!("Query graph");
+        let results_map= rolegraph.query("Life cycle concepts and project direction");
+        assert_eq!(results_map.len(),4);
     }
 }

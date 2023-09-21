@@ -241,6 +241,7 @@ impl Api {
             .arg(&*article)
             .query(&mut con)
             .unwrap();
+        // FIXME: shall pickup role from API
         let role= "project-manager";
         let automata_url = "./test-data/term_to_id.json";
         let _ = parse_article(&article, &id, role, automata_url, &mut con).await;

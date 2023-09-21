@@ -14,3 +14,12 @@ ahash = {version="0.8.3", features=["serde"]}
 terraphim_automata = { path="../terraphim_automata"}
 itertools="0.10.5"
 ulid = {version = "1.0.0",features=["serde","uuid"]}
+log = "0.4.20"
+tracing = "0.1.37"
+
+[[bench]]
+name = "pipeline_benchmark"
+harness = false
+
+[dev-dependencies]
+criterion = "0.3"

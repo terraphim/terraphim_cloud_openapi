@@ -8,7 +8,7 @@ fn main() {
     let paragraph = "This is the first sentence.\n\n This is the second sentence. This is the second sentence? This is the second sentence| This is the second sentence!\n\nThis is the third sentence. Mr. John Johnson Jr. was born in the U.S.A but earned his Ph.D. in Israel before joining Nike Inc. as an engineer. He also worked at craigslist.org as a business analyst.";
     println!("Sentence segmentation test");
     for sentence in split_paragraphs(paragraph) {
-        println!("Sentence {}", sentence);
+        println!("Sentence {:#?}", sentence);
     }
     println!("System operator role");
     let role = "system operator".to_string();
@@ -27,9 +27,34 @@ fn main() {
     let article_id = Ulid::new().to_string();
     for (a, b) in matches3.into_iter().tuple_windows() {
         println!("a {} b {}", a, b);
-        rolegraph.add_or_update_article(article_id.clone(), a, b);
+        rolegraph.add_or_update_document(article_id.clone(), a, b);
         v.push(magic_pair(a, b));
     }
+    let article_id2= Ulid::new().to_string();
+    let query2 = "I am a text with the word Life cycle concepts and bar and Trained operators and maintainers, some bingo words Paradigm Map and project planning, then again: some bingo words Paradigm Map and project planning, then repeats: Trained operators and maintainers, project direction";
+    let matches4 = find_matches_ids(query2, &dict_hash).unwrap();
+    
+    for (a, b) in matches4.into_iter().tuple_windows() {
+        println!("a {} b {}", a, b);
+        rolegraph.add_or_update_document(article_id2.clone(), a, b);
+        v.push(magic_pair(a, b));
+    }
+
+    let article_id3= Ulid::new().to_string();
+    let query3 = "I am a text with the word Life cycle concepts and bar and maintainers, some bingo words Paradigm Map and project planning, then again: some bingo words Paradigm Map and project planning, then repeats: Trained operators and maintainers, project direction";
+    let matches5 = find_matches_ids(query3, &dict_hash).unwrap();
+    
+    for (a, b) in matches5.into_iter().tuple_windows() {
+        println!("a {} b {}", a, b);
+        rolegraph.add_or_update_document(article_id3.clone(), a, b);
+        v.push(magic_pair(a, b));
+    }
+
+    // let article_id4= Ulid::new().to_string();
+    let article_id4= "ArticleID4".to_string();
+    let query4 = "I am a text with the word Life cycle concepts and bar and maintainers, some bingo words, then again: some bingo words Paradigm Map and project planning, then repeats: Trained operators and maintainers, project direction";
+    rolegraph.parse_document_to_pair(article_id4,query4);
+
     println!("Magic Pairs {:?}", v);
 
     println!("Magic unpar");
@@ -38,9 +63,6 @@ fn main() {
     }
     println!("{:?}", rolegraph);
     println!("Query graph");
-    // TODO: now query edges given nodes, shall query will be cantor product?
-    // query: matched query to nodes
-    // for each node return list of all edges (in this node)
-    // sort by node rank, edge_rank, article_id rank
-    rolegraph.query("Life cycle concepts and project direction");
+    let results_map=rolegraph.query("Life cycle concepts and project direction");
+    println!("Results {:#?}", results_map);
 }
