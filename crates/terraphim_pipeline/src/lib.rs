@@ -8,8 +8,8 @@ use std::mem;
 use terraphim_automata::load_automata;
 use terraphim_automata::matcher::{find_matches_ids, Dictionary};
 use unicode_segmentation::UnicodeSegmentation;
-// use log::{ info, warn, error, debug};
-use tracing::{debug, error, info, span, warn, Level};
+use log::{ info, warn, error, debug};
+// use tracing::{debug, error, info, span, warn, Level};
 
 
 // Reference to external storage of documents, traditional indexes use document, aka article or entity.
